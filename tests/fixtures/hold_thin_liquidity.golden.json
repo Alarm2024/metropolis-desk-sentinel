@@ -1,10 +1,18 @@
 {
   "signal": "HOLD",
   "safe_hold": true,
+  "trust_posture": "REFUSAL",
   "refusal_code": "EXEC_QUALITY",
   "refusal_reason": "Refused directional action: execution quality below trust threshold",
   "confidence": 0.01,
-  "provenance_hash": "8d8903ef1d188b1ec91cf842d5eb967412338351695dfb2dea54cf27e5736a57",
-  "schema_version": "1.1",
-  "agent_version": "0.2.0-trust"
+  "provenance_hash": "a2a412246eb43116f89863b5df8e002376e4488a15db359511c363d60c3ab179",
+  "schema_version": "2.0",
+  "agent_version": "1.0.0-metropolis",
+  "reason_codes": [
+    "ORDER_FLOW_NEUTRAL",
+    "VOLUME_FLAT",
+    "THIN_LIQUIDITY",
+    "WIDE_SPREAD",
+    "REFUSAL_EXEC_QUALITY"
+  ]
 }

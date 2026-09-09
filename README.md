@@ -7,24 +7,23 @@
 **Track:** Trust / Identity & AI Infrastructure — [Metropolis Monad Hackathon](https://metropolis.monad.xyz)  
 **Builder:** Wyndham Heaven / elghaly solo  
 **Submit target:** ~October 13, 2026  
-**Repo:** [Alarm2024/metropolis-desk-sentinel](https://github.com/Alarm2024/metropolis-desk-sentinel)
-
-A local desk sentinel that reads **mock** metrics and emits short, auditable **CLEAR / SHORT / HOLD** JSON cards. When conditions are ambiguous or execution quality is poor, the agent applies **SAFE HOLD honesty** — it holds, logs an explicit **refusal code**, and never fakes conviction.
+**Agent version:** `1.0.0-metropolis` · **Card schema:** `2.0`
 
 ---
 
-## Why honesty beats fake confidence (Trust / AI pitch)
+## The pitch: desks need agents that refuse soft lies
 
-Many trading assistants optimize for *sounding* confident. Morning Light Desk Sentinel optimizes for **trust**:
+Trading desks drown in AI assistants that *sound* confident. They emit BUY/SELL on thin evidence, hide uncertainty behind polished prose, and leave no audit trail when they are wrong.
 
-| Fake-confidence pattern | This agent |
-|-------------------------|------------|
-| Always emits BUY/SELL | Emits HOLD when edge or execution quality is insufficient |
-| Hides uncertainty | Surfaces `safe_hold`, `refusal_code`, and `refusal_reason` |
-| Black-box decisions | Append-only decision log + SHA-256 provenance hash |
-| Unversioned outputs | Card `schema_version` for audit trail upgrades |
+**Morning Light Desk Sentinel** inverts that. The product is not prediction — it is **refusal**:
 
-The goal is **identity-grade auditability**: anyone can replay inputs, verify the hash, and inspect why the agent refused to act.
+- When execution quality is thin → **SAFE HOLD** with `EXEC_QUALITY`
+- When edge is too weak → **SAFE HOLD** with `NO_EDGE`
+- When score sits in the neutral band → **SAFE HOLD** with `NEUTRAL_BAND` — never fake CLEAR
+
+Every refusal ships with crisp human reasons, machine-readable `reason_codes`, a typed card schema, and a **SHA-256 provenance hash** anyone can replay and verify. Evaluations append to a **hash-chained decision log** — tamper-evident, no secrets, no wallet keys, no live trading.
+
+This is Trust / Identity infrastructure: an agent with a verifiable identity (`agent_version`), a versioned output contract (`schema_version`), and an honest posture field (`trust_posture: REFUSAL | DIRECTIONAL`).
 
 ---
 
@@ -37,144 +36,124 @@ chmod +x run.sh
 ./run.sh
 ```
 
-Open **http://127.0.0.1:8080** — enter an optional **demo seed** for repeatable hashes, then click **Run desk evaluation**.
+Open **http://127.0.0.1:8080**
 
-### CLI (JSON only)
+1. Enter a demo seed (e.g. `metropolis-judge-001`) for repeatable hashes
+2. Click **Evaluate mock desk** — or pick a **judge scenario** fixture
+3. Watch SAFE HOLD refusals surface with provenance verification live in the UI
+
+### CLI
 
 ```bash
 python3 -m pip install -r requirements.txt
-python3 cli.py --seed demo-001
+python3 cli.py --seed metropolis-judge-001 --verify
+python3 cli.py --scenario hold_thin_liquidity
 ```
 
-### Tests
+### Tests (airtight)
 
 ```bash
 python3 -m pytest tests/ -v
 ```
 
+22+ tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain tamper detection, and provenance verification.
+
 ---
 
-## What this project claims
+## What we claim
 
-- Local mock desk metrics (deterministic with seed)
-- Rule-based CLEAR / SHORT / HOLD with explicit SAFE HOLD refusals
-- Append-only JSONL decision log (`data/decision_log.jsonl`)
-- Card schema v1.1 with provenance hashing
-- Optional keyless read-only public summary (`PUBLIC_METRICS=1`)
+| Capability | Detail |
+|------------|--------|
+| SAFE HOLD honesty | Every HOLD is `trust_posture=REFUSAL` with explicit `refusal_code` + `refusal_reason` |
+| Typed card schema | Pydantic-validated `SignalCardSchema` v2.0 — invariants enforced at emission |
+| Provenance | SHA-256 over metrics, signal, trust_posture, reason_codes, refusal_code |
+| Decision log | Append-only JSONL, hash-chained entries, provenance gate on append |
+| Deterministic demos | Same seed → identical metrics, card, and hash |
+| Judge scenarios | Five golden fixtures covering CLEAR, SHORT, and all refusal paths |
 
-## What this project does NOT claim
+## What we do NOT claim
 
-- Live market data, mainnet, or testnet trading
-- Wallet keys, Jito, MEV, or order execution
-- LLM inference (deterministic rules only — auditable by design)
-- On-chain deployment (future stub in `docs/MONAD_DEPLOY.md`)
+- Live market data, mainnet, testnet, or order execution
+- Wallet keys, Jito, MEV, or broker connectivity
+- LLM inference (rule-based only — auditable by design)
+- On-chain deployment in this repo (future stub: `docs/MONAD_DEPLOY.md`)
 
 ---
 
 ## API
 
+Interactive docs: **http://127.0.0.1:8080/docs**
+
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/health` | Liveness + mode flags |
-| `GET` | `/api/metrics?seed=` | Mock metrics snapshot (optional seed) |
-| `POST` | `/api/evaluate` | Run agent → signal card JSON. Body: `{"seed": "demo-001"}` |
-| `GET` | `/api/last` | Last card from this server process |
-| `GET` | `/api/decisions?limit=` | Recent entries from append-only decision log |
-| `GET` | `/api/public/summary` | Read-only aggregates (**only when `PUBLIC_METRICS=1`**) |
-| `GET` | `/` | Status UI |
+| `GET` | `/api/health` | Liveness, agent + schema version, product statement |
+| `GET` | `/api/schema` | JSON Schema + trust invariants for judges |
+| `POST` | `/api/evaluate` | Evaluate mock desk. Body: `{"seed":"..."}` |
+| `GET` | `/api/scenarios` | List named judge fixtures |
+| `POST` | `/api/scenarios/{name}/evaluate` | Run fixture (deterministic) |
+| `GET` | `/api/decisions` | Hash-chained log + integrity status |
+| `POST` | `/api/verify` | Verify provenance_hash for a card JSON |
+| `GET` | `/api/public/summary` | Read-only aggregates (`PUBLIC_METRICS=1` only) |
 
-### Deterministic demos
+### Deterministic demo
 
 ```bash
-curl -X POST http://127.0.0.1:8080/api/evaluate \
+curl -s -X POST http://127.0.0.1:8080/api/evaluate \
   -H 'Content-Type: application/json' \
-  -d '{"seed":"hackathon-demo"}'
+  -d '{"seed":"metropolis-judge-001"}' | jq '.provenance_hash, .refusal_code, .trust_posture'
 ```
 
-Same seed → same metrics → same provenance hash.
-
-### Optional public metrics (off by default)
-
-```bash
-PUBLIC_METRICS=1 ./run.sh
-curl http://127.0.0.1:8080/api/public/summary
-```
-
-Returns aggregate signal counts and SAFE HOLD rates — no secrets, no live trading claims.
+Run twice — hash is identical.
 
 ---
 
-## Signals & refusals
-
-| Signal | Meaning |
-|--------|---------|
-| `CLEAR` | Bullish desk bias within trust bounds |
-| `SHORT` | Bearish desk bias within trust bounds |
-| `HOLD` | No actionable edge — often with `safe_hold: true` |
-
-When `safe_hold` is true, the card includes:
-
-| `refusal_code` | When |
-|----------------|------|
-| `EXEC_QUALITY` | Liquidity/spread below trust threshold |
-| `NO_EDGE` | Composite score too weak |
-| `NEUTRAL_BAND` | Score inside neutral band — no fake conviction |
-
----
-
-## Provenance & audit trail
-
-Each card includes:
-
-- **`schema_version`** — card format version (currently `1.1`)
-- **`provenance_hash`** — SHA-256 over schema version, metrics, signal, `safe_hold`, and `refusal_code`
-- **Decision log** — every evaluation appended to `data/decision_log.jsonl`
-
-Example card:
+## Signal card (schema 2.0)
 
 ```json
 {
   "signal": "HOLD",
-  "summary": "Hold — conditions ambiguous or untrusted for directional action",
+  "summary": "Hold — conditions untrusted for directional action",
   "safe_hold": true,
+  "trust_posture": "REFUSAL",
   "refusal_code": "EXEC_QUALITY",
   "refusal_reason": "Refused directional action: execution quality below trust threshold",
   "confidence": 0.312,
   "reasons": ["Thin liquidity — execution risk elevated", "SAFE HOLD: insufficient execution quality"],
-  "schema_version": "1.1",
-  "agent_version": "0.2.0-trust",
+  "reason_codes": ["THIN_LIQUIDITY", "REFUSAL_EXEC_QUALITY"],
+  "schema_version": "2.0",
+  "agent_version": "1.0.0-metropolis",
   "provenance_hash": "a1b2c3..."
 }
 ```
 
+Directional cards (`CLEAR` / `SHORT`) omit refusal fields and set `trust_posture: DIRECTIONAL`.
+
 ---
 
-## Scenario tests
+## Golden scenarios
 
-Golden fixtures in `tests/fixtures/` prove behavior across five market scenarios:
-
-| Fixture | Expected |
-|---------|----------|
-| `clear_bullish` | CLEAR, no refusal |
-| `short_bearish` | SHORT, no refusal |
-| `hold_thin_liquidity` | HOLD + EXEC_QUALITY |
-| `hold_neutral_edge` | HOLD + NO_EDGE |
-| `hold_neutral_band` | HOLD + NEUTRAL_BAND |
-
-Run: `python3 -m pytest tests/test_scenarios.py -v`
+| Fixture | Expected | Why judges care |
+|---------|----------|-----------------|
+| `clear_bullish` | CLEAR | Acts only when trust bounds pass |
+| `short_bearish` | SHORT | Bearish with good execution quality |
+| `hold_thin_liquidity` | HOLD + EXEC_QUALITY | Strong flow still refused on thin book |
+| `hold_neutral_edge` | HOLD + NO_EDGE | No fake conviction on weak edge |
+| `hold_neutral_band` | HOLD + NEUTRAL_BAND | Neutral band → honest hold |
 
 ---
 
 ## Project layout
 
 ```
-agent/              Desk agent, mock metrics, decision log, fixtures loader
-server/             FastAPI app
-ui/                 Status page (SAFE HOLD badge, provenance, demo seed)
-tests/fixtures/     Scenario fixtures + golden expectations
-cli.py              One-shot JSON evaluator
-docs/               Monad deploy stub
-data/               Append-only decision log (gitignored)
+agent/
+  schema.py         Typed Pydantic card schema + trust invariants
+  desk_agent.py     Rule-based evaluator — SAFE HOLD is the product
+  provenance.py     Hash compute + verify
+  decision_log.py   Hash-chained append-only audit log
+  metrics.py        Deterministic mock metrics
+server/app.py       FastAPI + OpenAPI docs
+ui/                 Judge demo UI (branding, scenarios, log, verify)
+tests/fixtures/     Golden scenarios + expected outputs
 ```
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for design detail.
@@ -183,4 +162,4 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for design detail.
 
 ## License
 
-MIT — hackathon scaffold.
+MIT

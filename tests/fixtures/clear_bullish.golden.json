@@ -1,10 +1,17 @@
 {
   "signal": "CLEAR",
   "safe_hold": false,
+  "trust_posture": "DIRECTIONAL",
   "refusal_code": null,
   "refusal_reason": null,
   "confidence": 0.618,
-  "provenance_hash": "84f1c5366284ff988b835168d9d29cee6a633139c6d6ce4305914cb18951aac6",
-  "schema_version": "1.1",
-  "agent_version": "0.2.0-trust"
+  "provenance_hash": "8a0f7c7a8003c188b75276bc02741b8da042f2c34a088598f6db4b71fe4ae5e1",
+  "schema_version": "2.0",
+  "agent_version": "1.0.0-metropolis",
+  "reason_codes": [
+    "BUY_FLOW_DOMINANT",
+    "VOLUME_UPTICK",
+    "EXEC_QUALITY_OK",
+    "SCORE_ABOVE_CLEAR"
+  ]
 }

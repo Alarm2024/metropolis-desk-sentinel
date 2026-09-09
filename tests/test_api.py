@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-# Isolate decision log per test module run
 os.environ["DECISION_LOG_PATH"] = str(Path(__file__).resolve().parent / "_api_test_log.jsonl")
 
 from server.app import app  # noqa: E402
@@ -28,7 +27,17 @@ def test_health() -> None:
     assert res.status_code == 200
     body = res.json()
     assert body["status"] == "ok"
-    assert body["mode"] == "local-mock"
+    assert body["schema_version"] == "2.0"
+    assert "SAFE HOLD" in body["product"]
+
+
+def test_schema_endpoint() -> None:
+    res = client.get("/api/schema")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["schema_version"] == "2.0"
+    assert "trust_invariants" in body
+    assert "json_schema" in body
 
 
 def test_evaluate_deterministic_seed() -> None:
@@ -38,25 +47,34 @@ def test_evaluate_deterministic_seed() -> None:
     assert res2.status_code == 200
     c1 = res1.json()
     c2 = res2.json()
+    assert c1 == c2
     assert c1["provenance_hash"] == c2["provenance_hash"]
-    assert c1["metrics"]["seed"] == "demo-deterministic"
 
 
-def test_evaluate_appends_decision_log() -> None:
+def test_scenarios_list_and_evaluate() -> None:
+    res = client.get("/api/scenarios")
+    assert res.status_code == 200
+    names = [s["name"] for s in res.json()]
+    assert "hold_thin_liquidity" in names
+
+    res2 = client.post("/api/scenarios/hold_thin_liquidity/evaluate")
+    assert res2.status_code == 200
+    card = res2.json()
+    assert card["signal"] == "HOLD"
+    assert card["refusal_code"] == "EXEC_QUALITY"
+
+
+def test_decisions_integrity() -> None:
     client.post("/api/evaluate", json={"seed": "log-test"})
     res = client.get("/api/decisions?limit=5")
     assert res.status_code == 200
-    assert res.json()["count"] >= 1
+    body = res.json()
+    assert body["integrity_ok"] is True
+    assert body["count"] >= 1
 
 
-def test_last_card_after_evaluate() -> None:
-    client.post("/api/evaluate", json={"seed": "last-test"})
-    res = client.get("/api/last")
+def test_verify_endpoint() -> None:
+    card = client.post("/api/evaluate", json={"seed": "verify-test"}).json()
+    res = client.post("/api/verify", json=card)
     assert res.status_code == 200
-    assert res.json()["signal"] in ("CLEAR", "SHORT", "HOLD")
-
-
-def test_metrics_with_seed_query() -> None:
-    res = client.get("/api/metrics?seed=fixed-seed")
-    assert res.status_code == 200
-    assert res.json()["seed"] == "fixed-seed"
+    assert res.json()["valid"] is True

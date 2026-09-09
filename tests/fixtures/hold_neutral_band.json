@@ -3,8 +3,8 @@
   "metrics": {
     "symbol": "MLDS-BAND",
     "bid_ask_bps": 5.0,
-    "volume_delta_pct": 8.0,
-    "order_flow_imbalance": 0.32,
+    "volume_delta_pct": 9.0,
+    "order_flow_imbalance": 0.25,
     "volatility_1h_pct": 2.0,
     "liquidity_score": 0.7,
     "spread_stability": 0.8,
