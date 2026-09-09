@@ -20,3 +20,5 @@ jobs:
         run: python3 -m pytest tests/ -v --tb=short
       - name: Verify CLI scenario
         run: python3 cli.py --scenario clear_bullish --no-log --verify 2>&1 | head -5
+      - name: Run deterministic demo script
+        run: chmod +x scripts/demo.sh && ./scripts/demo.sh

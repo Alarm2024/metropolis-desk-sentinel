@@ -42,6 +42,15 @@ Open **http://127.0.0.1:8080**
 2. Click **Evaluate mock desk** — or pick a **judge scenario** fixture
 3. Watch SAFE HOLD refusals surface with provenance verification live in the UI
 
+### One-shot demo (judges)
+
+```bash
+chmod +x scripts/demo.sh
+./scripts/demo.sh
+```
+
+Fixed seed `metropolis-demo-2026` → identical card and `provenance_hash` every run. Exit 0 on success.
+
 ### CLI
 
 ```bash
@@ -153,10 +162,15 @@ agent/
   metrics.py        Deterministic mock metrics
 server/app.py       FastAPI + OpenAPI docs
 ui/                 Judge demo UI (branding, scenarios, log, verify)
+scripts/demo.sh     One-shot deterministic judge demo (fixed seed)
 tests/fixtures/     Golden scenarios + expected outputs
+contracts/          SignalAnchor interface stub (future Monad anchor)
+docs/
+  SUBMIT.md         Metropolis submission profile + demo steps
+  MONAD_DEPLOY.md   ERC-8004-inspired identity map + Monad checklist
 ```
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for design detail.
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for design detail and [docs/SUBMIT.md](./docs/SUBMIT.md) for the public hackathon write-up.
 
 ---
 
