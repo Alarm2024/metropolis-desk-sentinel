@@ -1,0 +1,10 @@
+{
+  "signal": "HOLD",
+  "safe_hold": true,
+  "refusal_code": "NEUTRAL_BAND",
+  "refusal_reason": "Refused directional action: score inside neutral band \u2014 no fake conviction",
+  "confidence": 0.264,
+  "provenance_hash": "e81f58b811e4da2d201cf7fa82cefe06a56130f5a902bbc6b8d790fcea84419f",
+  "schema_version": "1.1",
+  "agent_version": "0.2.0-trust"
+}

@@ -11,11 +11,15 @@
     <p class="owner-brand">✝️🧿🪬</p>
     <p class="bot-brand">3️⃣🧿5️⃣</p>
     <h1>Morning Light Desk Sentinel</h1>
-    <p class="subtitle">Trust / Identity &amp; AI Infrastructure — local mock MVP</p>
+    <p class="subtitle">Trust / Identity &amp; AI Infrastructure — auditable mock desk signals</p>
   </header>
 
   <main>
     <section class="controls">
+      <label class="seed-field" for="demo-seed">
+        <span>Demo seed</span>
+        <input id="demo-seed" type="text" placeholder="optional — e.g. demo-001" autocomplete="off" />
+      </label>
       <button id="evaluate-btn" type="button">Run desk evaluation</button>
       <span id="status-pill" class="pill idle">idle</span>
     </section>
@@ -23,13 +27,25 @@
     <section id="card-panel" class="card-panel hidden">
       <div class="signal-row">
         <span id="signal-badge" class="badge HOLD">HOLD</span>
-        <span id="safe-hold" class="safe-hold hidden">SAFE HOLD</span>
+        <span id="safe-hold" class="safe-hold hidden" title="Agent refused directional action — honesty over fake conviction">
+          <span class="safe-hold-icon" aria-hidden="true">⛔</span>
+          SAFE HOLD
+        </span>
       </div>
+
+      <div id="refusal-panel" class="refusal-panel hidden">
+        <p class="refusal-label">Refusal</p>
+        <p id="refusal-code" class="refusal-code"></p>
+        <p id="refusal-reason" class="refusal-reason"></p>
+      </div>
+
       <p id="summary" class="summary"></p>
       <dl class="meta">
         <div><dt>Confidence</dt><dd id="confidence">—</dd></div>
+        <div><dt>Schema</dt><dd id="schema-version">—</dd></div>
         <div><dt>Agent</dt><dd id="agent-version">—</dd></div>
         <div><dt>Timestamp</dt><dd id="timestamp">—</dd></div>
+        <div><dt>Demo seed</dt><dd id="metrics-seed">—</dd></div>
       </dl>
       <div class="reasons">
         <h2>Reasons</h2>
@@ -37,13 +53,17 @@
       </div>
       <div class="provenance">
         <h2>Provenance hash</h2>
-        <code id="provenance-hash">—</code>
-        <p class="hint">SHA-256 over metrics snapshot, signal, and agent version — auditable, no chain claims.</p>
+        <div class="provenance-row">
+          <code id="provenance-hash">—</code>
+          <button id="copy-hash-btn" type="button" class="ghost-btn" title="Copy hash">Copy</button>
+        </div>
+        <p class="hint">SHA-256 over schema version, metrics snapshot, signal, safe_hold, and refusal_code — auditable, no chain claims.</p>
       </div>
     </section>
 
     <section id="empty-state" class="empty">
       <p>No signal card yet. Run an evaluation to see the latest CLEAR / SHORT / HOLD output.</p>
+      <p class="hint">Use a demo seed for repeatable hashes during presentations.</p>
     </section>
   </main>
 

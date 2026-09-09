@@ -3,17 +3,28 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 
+from agent.decision_log import append_decision
 from agent.desk_agent import evaluate_desk
 from agent.metrics import generate_mock_metrics
 
 
 def main() -> int:
-    metrics = generate_mock_metrics()
+    parser = argparse.ArgumentParser(description="Morning Light Desk Sentinel CLI")
+    parser.add_argument("--seed", help="Deterministic demo seed (repeatable output)")
+    parser.add_argument("--symbol", default="MLDS-MOCK", help="Mock symbol label")
+    parser.add_argument("--no-log", action="store_true", help="Skip appending to decision log")
+    args = parser.parse_args()
+
+    metrics = generate_mock_metrics(symbol=args.symbol, seed=args.seed)
     card = evaluate_desk(metrics)
-    json.dump(card.to_dict(), sys.stdout, indent=2)
+    card_dict = card.to_dict()
+    if not args.no_log:
+        append_decision(card_dict)
+    json.dump(card_dict, sys.stdout, indent=2)
     sys.stdout.write("\n")
     return 0
 

@@ -1,0 +1,10 @@
+{
+  "signal": "CLEAR",
+  "safe_hold": false,
+  "refusal_code": null,
+  "refusal_reason": null,
+  "confidence": 0.618,
+  "provenance_hash": "84f1c5366284ff988b835168d9d29cee6a633139c6d6ce4305914cb18951aac6",
+  "schema_version": "1.1",
+  "agent_version": "0.2.0-trust"
+}

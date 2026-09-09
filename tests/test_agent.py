@@ -1,6 +1,6 @@
 """Agent unit tests — mock metrics + SAFE HOLD paths."""
 
-from agent.desk_agent import evaluate_desk, AGENT_VERSION
+from agent.desk_agent import AGENT_VERSION, CARD_SCHEMA_VERSION, evaluate_desk
 from agent.metrics import DeskMetrics, generate_mock_metrics
 
 
@@ -9,6 +9,13 @@ def test_mock_metrics_deterministic_per_minute():
     b = generate_mock_metrics("TEST")
     assert a.seed == b.seed
     assert a.order_flow_imbalance == b.order_flow_imbalance
+
+
+def test_mock_metrics_explicit_seed():
+    a = generate_mock_metrics("TEST", seed="demo-seed-001")
+    b = generate_mock_metrics("TEST", seed="demo-seed-001")
+    assert a.order_flow_imbalance == b.order_flow_imbalance
+    assert a.seed == "demo-seed-001"
 
 
 def test_signal_card_schema():
@@ -20,6 +27,7 @@ def test_signal_card_schema():
     assert 0.0 <= d["confidence"] <= 1.0
     assert len(d["provenance_hash"]) == 64
     assert d["agent_version"] == AGENT_VERSION
+    assert d["schema_version"] == CARD_SCHEMA_VERSION
 
 
 def test_safe_hold_on_thin_liquidity():
@@ -37,10 +45,21 @@ def test_safe_hold_on_thin_liquidity():
     card = evaluate_desk(m)
     assert card.signal == "HOLD"
     assert card.safe_hold is True
+    assert card.refusal_code == "EXEC_QUALITY"
+    assert card.refusal_reason is not None
 
 
 def test_provenance_hash_stable():
-    m = generate_mock_metrics("STABLE")
+    m = generate_mock_metrics("STABLE", seed="stable-demo")
     c1 = evaluate_desk(m)
     c2 = evaluate_desk(m)
     assert c1.provenance_hash == c2.provenance_hash
+
+
+def test_clear_has_no_refusal_fields():
+    from agent.fixtures import load_fixture
+
+    card = evaluate_desk(load_fixture("clear_bullish"))
+    d = card.to_dict()
+    assert "refusal_code" not in d
+    assert "refusal_reason" not in d
