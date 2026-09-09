@@ -22,3 +22,9 @@ jobs:
         run: python3 cli.py --scenario clear_bullish --no-log --verify 2>&1 | head -5
       - name: Run deterministic demo script
         run: chmod +x scripts/demo.sh && ./scripts/demo.sh
+      - name: Smoke test /api/health
+        run: |
+          python3 -m uvicorn server.app:app --host 127.0.0.1 --port 8080 &
+          sleep 2
+          curl -sf http://127.0.0.1:8080/api/health | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['status']=='ok' and d['mode']=='local-mock'"
+          kill %1 || true

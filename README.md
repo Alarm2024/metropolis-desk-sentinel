@@ -51,6 +51,8 @@ chmod +x scripts/demo.sh
 
 Fixed seed `metropolis-demo-2026` → identical card and `provenance_hash` every run. Exit 0 on success.
 
+**Exact judge clicks:** [docs/DEMO.md](./docs/DEMO.md) · **Demo GIF script:** [docs/SCREENSHOT_SCRIPT.md](./docs/SCREENSHOT_SCRIPT.md)
+
 ### CLI
 
 ```bash
@@ -65,7 +67,7 @@ python3 cli.py --scenario hold_thin_liquidity
 python3 -m pytest tests/ -v
 ```
 
-22+ tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain tamper detection, and provenance verification.
+61 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain tamper detection, provenance verification, and API health.
 
 ---
 
@@ -91,11 +93,11 @@ python3 -m pytest tests/ -v
 
 ## API
 
-Interactive docs: **http://127.0.0.1:8080/docs**
+Interactive docs: **http://127.0.0.1:8080/docs** · Full reference: [docs/API.md](./docs/API.md)
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/health` | Liveness, agent + schema version, product statement |
+| `GET` | `/api/health` | Public liveness — `status`, `mode: local-mock`, agent + schema version (no secrets) |
 | `GET` | `/api/schema` | JSON Schema + trust invariants for judges |
 | `POST` | `/api/evaluate` | Evaluate mock desk. Body: `{"seed":"..."}` |
 | `GET` | `/api/scenarios` | List named judge fixtures |
@@ -103,6 +105,12 @@ Interactive docs: **http://127.0.0.1:8080/docs**
 | `GET` | `/api/decisions` | Hash-chained log + integrity status |
 | `POST` | `/api/verify` | Verify provenance_hash for a card JSON |
 | `GET` | `/api/public/summary` | Read-only aggregates (`PUBLIC_METRICS=1` only) |
+
+### Health check (public, no auth)
+
+```bash
+curl -s http://127.0.0.1:8080/api/health | jq
+```
 
 ### Deterministic demo
 
@@ -166,7 +174,10 @@ scripts/demo.sh     One-shot deterministic judge demo (fixed seed)
 tests/fixtures/     Golden scenarios + expected outputs
 contracts/          SignalAnchor interface stub (future Monad anchor)
 docs/
-  SUBMIT.md         Metropolis submission profile + demo steps
+  SUBMIT.md         Metropolis portal copy-paste + submission profile
+  DEMO.md           Exact judge clicks (UI + CLI)
+  SCREENSHOT_SCRIPT.md  GIF/video shot list for portal demo
+  API.md            /api/health and HTTP reference
   MONAD_DEPLOY.md   ERC-8004-inspired identity map + Monad checklist
 ```
 
