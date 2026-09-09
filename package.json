@@ -1,0 +1,17 @@
+{
+  "name": "metropolis-desk-sentinel",
+  "version": "0.1.0",
+  "description": "Morning Light Desk Sentinel — Metropolis Trust/Identity & AI Infrastructure MVP",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "agent": "node agent/sentinel.js",
+    "status": "node status/server.js",
+    "start": "npm run agent && npm run status"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "Wyndham Heaven / elghaly",
+  "license": "MIT"
+}

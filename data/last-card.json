@@ -1,0 +1,50 @@
+{
+  "cardId": "f3ebfed7-6747-4ca5-a721-8dd257361c16",
+  "version": "1.0.0",
+  "project": "Morning Light Desk Sentinel",
+  "generatedAt": "2026-09-09T18:33:02.106Z",
+  "branding": {
+    "owner": "✝️🧿🪬",
+    "bot": "3️⃣🧿5️⃣"
+  },
+  "desk": {
+    "symbol": "SOL-USD",
+    "position": "short",
+    "exposureUsd": 3598,
+    "pnl24hPct": -1.58,
+    "volatilityIndex": 28,
+    "liquidityScore": 0.59,
+    "openOrders": 3,
+    "lastFillMs": 1788977479438
+  },
+  "signal": {
+    "action": "HOLD",
+    "rationale": "Mock metrics within normal band — maintain current stance.",
+    "confidence": 0.55,
+    "allowedActions": [
+      "SAFE HOLD",
+      "CLEAR",
+      "SHORT",
+      "HOLD"
+    ],
+    "honesty": {
+      "disclaimer": "This card is generated from mock desk metrics for MVP demonstration only. It is not financial advice and must not be used for live execution without independent verification.",
+      "dataSource": "mock",
+      "aiAssisted": true,
+      "humanReviewRequired": true,
+      "limitations": [
+        "Metrics are simulated, not exchange-sourced",
+        "Signal logic is rule-based, not ML-trained",
+        "No on-chain identity attestation in this MVP",
+        "Provenance hash covers card body only, not future chain anchors"
+      ]
+    }
+  },
+  "trust": {
+    "identityLayer": "stub",
+    "attestations": [],
+    "policyVersion": "trust-v0.1",
+    "metropolisTrack": "Trust / Identity & AI Infrastructure"
+  },
+  "provenanceHash": "c1a85035f4e4d47f86d433e29288a2709f38128b922ef64497bd30878bc604c4"
+}

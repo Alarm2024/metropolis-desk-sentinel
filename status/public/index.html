@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Morning Light Desk Sentinel — Status</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <p class="owner-brand">✝️🧿🪬</p>
+    <p class="bot-brand">3️⃣🧿5️⃣</p>
+    <h1>Morning Light Desk Sentinel</h1>
+    <p class="subtitle">Metropolis Trust / Identity &amp; AI Infrastructure — Status</p>
+  </header>
+
+  <main>
+    <section id="loading">Loading last card…</section>
+
+    <section id="card-view" hidden>
+      <div class="signal-banner" id="signal-action"></div>
+
+      <dl class="meta">
+        <dt>Generated</dt><dd id="generated-at"></dd>
+        <dt>Card ID</dt><dd id="card-id" class="mono"></dd>
+        <dt>Provenance hash</dt>
+        <dd id="provenance-hash" class="mono hash"></dd>
+      </dl>
+
+      <h2>Desk metrics <span class="tag mock">mock</span></h2>
+      <pre id="desk-json"></pre>
+
+      <h2>Signal &amp; honesty</h2>
+      <pre id="signal-json"></pre>
+
+      <h2>Trust layer</h2>
+      <pre id="trust-json"></pre>
+    </section>
+
+    <section id="empty" hidden>
+      <p>No card found. Run <code>npm run agent</code> to generate one.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>MVP demo — not financial advice. Mock data only.</p>
+    <p>Solo: Wyndham Heaven / elghaly</p>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
