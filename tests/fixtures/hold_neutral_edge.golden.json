@@ -1,0 +1,16 @@
+{
+  "signal": "HOLD",
+  "safe_hold": true,
+  "trust_posture": "REFUSAL",
+  "refusal_code": "NO_EDGE",
+  "refusal_reason": "Refused directional action: composite score too weak to trust",
+  "confidence": 0.101,
+  "provenance_hash": "7f67fd2942aec4dbba803afd6a49f75d36d60183ab8e4b38bce1f43c0d5f7f38",
+  "schema_version": "2.0",
+  "agent_version": "1.0.0-metropolis",
+  "reason_codes": [
+    "ORDER_FLOW_NEUTRAL",
+    "VOLUME_FLAT",
+    "REFUSAL_NO_EDGE"
+  ]
+}

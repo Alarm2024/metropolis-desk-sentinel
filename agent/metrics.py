@@ -32,11 +32,17 @@ def _derive_seed(symbol: str, bucket_ms: int) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
-def generate_mock_metrics(symbol: str = "MLDS-MOCK") -> DeskMetrics:
-    """Deterministic-per-minute mock metrics for repeatable local demos."""
-    now_ms = int(time.time() * 1000)
-    seed = _derive_seed(symbol, now_ms)
-    rng = random.Random(seed)
+def generate_mock_metrics(symbol: str = "MLDS-MOCK", seed: str | None = None) -> DeskMetrics:
+    """Deterministic mock metrics — per-minute bucket unless seed is provided."""
+    if seed is not None:
+        effective_seed = seed
+        # Fixed timestamp derived from seed so demo replays produce identical hashes.
+        offset = int(hashlib.sha256(seed.encode()).hexdigest()[:8], 16) % 86_400_000
+        now_ms = 1_725_900_000_000 + offset
+    else:
+        now_ms = int(time.time() * 1000)
+        effective_seed = _derive_seed(symbol, now_ms)
+    rng = random.Random(effective_seed)
 
     return DeskMetrics(
         symbol=symbol,
@@ -47,5 +53,5 @@ def generate_mock_metrics(symbol: str = "MLDS-MOCK") -> DeskMetrics:
         liquidity_score=round(rng.uniform(0.15, 0.95), 3),
         spread_stability=round(rng.uniform(0.2, 0.98), 3),
         timestamp_ms=now_ms,
-        seed=seed,
+        seed=effective_seed,
     )

@@ -4,53 +4,111 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Morning Light Desk Sentinel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <header>
-    <p class="owner-brand">✝️🧿🪬</p>
-    <p class="bot-brand">3️⃣🧿5️⃣</p>
-    <h1>Morning Light Desk Sentinel</h1>
-    <p class="subtitle">Trust / Identity &amp; AI Infrastructure — local mock MVP</p>
-  </header>
+  <div class="page">
+    <header class="site-header">
+      <div class="brand-stack">
+        <p class="owner-brand" aria-label="Owner">✝️🧿🪬</p>
+        <p class="bot-brand" aria-label="Bot">3️⃣🧿5️⃣</p>
+      </div>
+      <div class="title-block">
+        <p class="eyebrow">Metropolis Monad · Trust / Identity &amp; AI Infrastructure</p>
+        <h1>Morning Light Desk Sentinel</h1>
+        <p class="tagline">The product is <strong>refusal</strong> — agents that never fake CLEAR.</p>
+      </div>
+    </header>
 
-  <main>
-    <section class="controls">
-      <button id="evaluate-btn" type="button">Run desk evaluation</button>
-      <span id="status-pill" class="pill idle">idle</span>
+    <section class="trust-banner">
+      <p>When execution quality is thin or edge is weak, this agent emits <span class="highlight">SAFE HOLD</span> with explicit refusal codes and a provenance hash. No soft lies. No wallet keys. Local mock only.</p>
     </section>
 
-    <section id="card-panel" class="card-panel hidden">
-      <div class="signal-row">
-        <span id="signal-badge" class="badge HOLD">HOLD</span>
-        <span id="safe-hold" class="safe-hold hidden">SAFE HOLD</span>
-      </div>
-      <p id="summary" class="summary"></p>
-      <dl class="meta">
-        <div><dt>Confidence</dt><dd id="confidence">—</dd></div>
-        <div><dt>Agent</dt><dd id="agent-version">—</dd></div>
-        <div><dt>Timestamp</dt><dd id="timestamp">—</dd></div>
-      </dl>
-      <div class="reasons">
-        <h2>Reasons</h2>
-        <ul id="reasons"></ul>
-      </div>
-      <div class="provenance">
-        <h2>Provenance hash</h2>
-        <code id="provenance-hash">—</code>
-        <p class="hint">SHA-256 over metrics snapshot, signal, and agent version — auditable, no chain claims.</p>
-      </div>
-    </section>
+    <main class="layout">
+      <section class="panel controls-panel">
+        <h2>Run evaluation</h2>
+        <label class="field" for="demo-seed">
+          <span>Demo seed</span>
+          <input id="demo-seed" type="text" placeholder="e.g. metropolis-judge-001" autocomplete="off" />
+        </label>
+        <div class="btn-row">
+          <button id="evaluate-btn" type="button" class="primary">Evaluate mock desk</button>
+          <span id="status-pill" class="pill idle">idle</span>
+        </div>
 
-    <section id="empty-state" class="empty">
-      <p>No signal card yet. Run an evaluation to see the latest CLEAR / SHORT / HOLD output.</p>
-    </section>
-  </main>
+        <div class="scenario-block">
+          <h3>Judge scenarios</h3>
+          <p class="hint">Deterministic fixtures — same input, same hash, every time.</p>
+          <div id="scenario-buttons" class="scenario-grid"></div>
+        </div>
+      </section>
 
-  <footer>
-    <p>Builder: Wyndham Heaven / elghaly solo · English · local mock only</p>
-  </footer>
+      <section id="card-panel" class="panel card-panel hidden">
+        <div class="card-header">
+          <div class="signal-row">
+            <span id="signal-badge" class="badge HOLD">HOLD</span>
+            <span id="trust-posture" class="posture REFUSAL">REFUSAL</span>
+            <span id="safe-hold" class="safe-hold hidden">
+              <span aria-hidden="true">⛔</span> SAFE HOLD
+            </span>
+          </div>
+        </div>
 
+        <div id="refusal-panel" class="refusal-panel hidden">
+          <p class="section-label">Why we refused</p>
+          <p id="refusal-code" class="refusal-code"></p>
+          <p id="refusal-reason" class="refusal-reason"></p>
+        </div>
+
+        <p id="summary" class="summary"></p>
+
+        <dl class="meta">
+          <div><dt>Confidence</dt><dd id="confidence">—</dd></div>
+          <div><dt>Schema</dt><dd id="schema-version">—</dd></div>
+          <div><dt>Agent</dt><dd id="agent-version">—</dd></div>
+          <div><dt>Timestamp</dt><dd id="timestamp">—</dd></div>
+          <div><dt>Seed</dt><dd id="metrics-seed">—</dd></div>
+          <div><dt>Verified</dt><dd id="provenance-status">—</dd></div>
+        </dl>
+
+        <div class="reasons">
+          <p class="section-label">Reason trail</p>
+          <ul id="reasons"></ul>
+          <p class="section-label subtle">Reason codes</p>
+          <div id="reason-codes" class="code-chips"></div>
+        </div>
+
+        <div class="provenance">
+          <p class="section-label">Provenance hash</p>
+          <div class="provenance-row">
+            <code id="provenance-hash">—</code>
+            <button id="copy-hash-btn" type="button" class="ghost-btn">Copy</button>
+          </div>
+          <p class="hint">SHA-256 over schema, metrics, signal, trust_posture, reason_codes, and refusal_code.</p>
+        </div>
+      </section>
+
+      <section id="empty-state" class="panel empty-panel">
+        <p class="empty-title">No signal card yet</p>
+        <p>Run a mock evaluation or pick a judge scenario to see CLEAR / SHORT / HOLD with full audit trail.</p>
+      </section>
+
+      <section class="panel log-panel">
+        <div class="log-header">
+          <h2>Decision log</h2>
+          <span id="log-integrity" class="pill idle">—</span>
+        </div>
+        <ul id="decision-log" class="decision-log"></ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Builder: Wyndham Heaven / elghaly solo · English only · no live trading · no secrets</p>
+    </footer>
+  </div>
   <script src="/static/app.js"></script>
 </body>
 </html>
