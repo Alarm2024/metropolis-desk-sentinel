@@ -6,7 +6,17 @@ import hashlib
 import json
 from typing import Any
 
-from agent.schema import AGENT_VERSION, CARD_SCHEMA_VERSION, SignalCardSchema
+from agent.schema import (
+    AGENT_VERSION,
+    CARD_SCHEMA_VERSION,
+    DeskMetricsSchema,
+    SignalCardSchema,
+)
+
+
+def canonicalize_metrics(metrics: dict[str, Any]) -> dict[str, Any]:
+    """Normalize metrics to the same JSON form used in stored cards (float coercion)."""
+    return DeskMetricsSchema.model_validate(metrics).model_dump(mode="json")
 
 
 def provenance_payload(
@@ -43,7 +53,12 @@ def build_provenance_hash(
     reason_codes: list[str],
 ) -> str:
     payload = provenance_payload(
-        metrics, signal, safe_hold, refusal_code, trust_posture, reason_codes
+        canonicalize_metrics(metrics),
+        signal,
+        safe_hold,
+        refusal_code,
+        trust_posture,
+        reason_codes,
     )
     return compute_provenance_hash(payload)
 
