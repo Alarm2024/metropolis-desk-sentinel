@@ -5,10 +5,31 @@
 3️⃣🧿5️⃣
 
 **Track:** Trust / Identity & AI Infrastructure  
-**Hackathon:** [Metropolis Monad](https://metropolis.monad.xyz)  
+**Hackathon:** [Metropolis Monad](https://metropolis.monad.xyz) · submit at [hackathon.monad.xyz](https://hackathon.monad.xyz)  
 **Builder:** Wyndham Heaven / elghaly (solo)  
 **Submit target:** October 13, 2026  
 **Repo:** https://github.com/Alarm2024/metropolis-desk-sentinel
+
+---
+
+## Portal copy-paste (hackathon.monad.xyz)
+
+Use these values in the Metropolis project profile. Portal display name may show as **Skyline** or **Morning Light Desk Sentinel** — both refer to this repo.
+
+| Portal field | Copy |
+|--------------|------|
+| **Project name** | Morning Light Desk Sentinel |
+| **Track** | Trust / Identity & AI Infrastructure |
+| **One-liner** | Desk agents that refuse soft lies — SAFE HOLD with provenance hash and hash-chained audit log. |
+| **Description** | Trading desks need AI that refuses to fake conviction. Morning Light Desk Sentinel emits HOLD with explicit `refusal_code` when execution quality is thin or edge is weak, ships SHA-256 provenance anyone can replay, and appends every evaluation to a tamper-evident hash-chained decision log. ERC-8004-inspired agent identity fields (`agent_version`, `schema_version`, `trust_posture`). Rule-based, deterministic, local mock — no wallet keys, no live trading. |
+| **Problem** | AI desk assistants sound confident but emit directional calls on thin evidence with no audit trail when wrong — a trust failure, not a model failure. |
+| **Solution** | SAFE HOLD honesty + provenance hash + hash-chained decision log + typed signal card schema with machine-readable refusal codes. |
+| **Demo link** | Run locally: `./run.sh` → http://127.0.0.1:8080 — see [DEMO.md](./DEMO.md). CLI: `./scripts/demo.sh` (15 s, deterministic). |
+| **Code link** | https://github.com/Alarm2024/metropolis-desk-sentinel |
+| **Public health check** | `GET /api/health` — see [API.md](./API.md). Example: `curl -s http://127.0.0.1:8080/api/health` |
+| **Built during Metropolis** | Yes — Trust / Identity MVP (Sep 2026 build window) |
+
+**Demo video / GIF:** Follow [SCREENSHOT_SCRIPT.md](./SCREENSHOT_SCRIPT.md) (60–90 s shot list). Upload MP4 to portal or embed in project profile per Metropolis rules.
 
 ---
 
@@ -35,6 +56,9 @@ No live feeds. No wallet keys. No Jito. No mainnet claims in this MVP.
 
 ## Demo steps (judges)
 
+**Full click path:** [DEMO.md](./DEMO.md)  
+**Recording script:** [SCREENSHOT_SCRIPT.md](./SCREENSHOT_SCRIPT.md)
+
 ### One-shot CLI (deterministic)
 
 ```bash
@@ -55,9 +79,18 @@ chmod +x run.sh
 
 Open **http://127.0.0.1:8080**
 
-1. Enter seed `metropolis-judge-001` (or leave default)
-2. Click **Evaluate mock desk** — or pick a **judge scenario** fixture
-3. Confirm SAFE HOLD refusals show `refusal_code`, live provenance verify, and decision log tail
+1. Click **`hold thin liquidity`** under Judge scenarios — HOLD + `EXEC_QUALITY`
+2. Click **`clear bullish`** — CLEAR + DIRECTIONAL (refusal panel hidden)
+3. Enter seed `metropolis-judge-001` → **Evaluate mock desk** twice — same hash
+4. Confirm Decision log pill shows **chain ok**
+
+### Health endpoint (public, no secrets)
+
+```bash
+curl -s http://127.0.0.1:8080/api/health | python3 -m json.tool
+```
+
+Returns `status`, `mode: local-mock`, `agent_version`, `schema_version`. Full reference: [API.md](./API.md).
 
 ### Golden scenarios (all refusal paths covered)
 
@@ -76,7 +109,7 @@ python3 -m pip install -r requirements.txt
 python3 -m pytest tests/ -v
 ```
 
-22+ tests: golden fixtures, 100-seed sweep (never fake CLEAR on thin books), hash-chain tamper detection, provenance verification.
+61 tests: golden fixtures, 100-seed sweep (never fake CLEAR on thin books), hash-chain tamper detection, provenance verification, API health.
 
 ---
 
@@ -93,6 +126,9 @@ Key paths:
 | `agent/provenance.py` | Hash compute + verify |
 | `agent/decision_log.py` | Hash-chained append-only audit log |
 | `scripts/demo.sh` | One-shot deterministic judge demo |
+| `docs/DEMO.md` | Exact judge clicks (UI + CLI) |
+| `docs/SCREENSHOT_SCRIPT.md` | GIF/video shot list for portal demo |
+| `docs/API.md` | `/api/health` and full HTTP reference |
 | `docs/MONAD_DEPLOY.md` | Future Monad hash-anchor checklist (stub) |
 | `contracts/` | `SignalAnchor` interface stub for future on-chain anchoring |
 
@@ -100,7 +136,7 @@ Key paths:
 
 ## What we claim vs. what we do not
 
-**Claim:** auditable local agent with verifiable identity fields, honest refusals, reproducible provenance, tamper-evident log.
+**Claim:** auditable local agent with verifiable identity fields, honest refusals, reproducible provenance, tamper-evident log, public `/api/health` liveness.
 
 **Do not claim:** live trading, mainnet/testnet deployment, LLM inference, or on-chain anchors in this repo (future work documented in `docs/MONAD_DEPLOY.md`).
 
@@ -109,4 +145,5 @@ Key paths:
 ## Submit
 
 **Target date:** October 13, 2026  
-**Track:** Trust / Identity & AI Infrastructure — Metropolis Monad Hackathon
+**Track:** Trust / Identity & AI Infrastructure — Metropolis Monad Hackathon  
+**Portal:** [hackathon.monad.xyz](https://hackathon.monad.xyz)
