@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Morning Light Desk Sentinel</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <p class="owner-brand">✝️🧿🪬</p>
+    <p class="bot-brand">3️⃣🧿5️⃣</p>
+    <h1>Morning Light Desk Sentinel</h1>
+    <p class="subtitle">Trust / Identity &amp; AI Infrastructure — local mock MVP</p>
+  </header>
+
+  <main>
+    <section class="controls">
+      <button id="evaluate-btn" type="button">Run desk evaluation</button>
+      <span id="status-pill" class="pill idle">idle</span>
+    </section>
+
+    <section id="card-panel" class="card-panel hidden">
+      <div class="signal-row">
+        <span id="signal-badge" class="badge HOLD">HOLD</span>
+        <span id="safe-hold" class="safe-hold hidden">SAFE HOLD</span>
+      </div>
+      <p id="summary" class="summary"></p>
+      <dl class="meta">
+        <div><dt>Confidence</dt><dd id="confidence">—</dd></div>
+        <div><dt>Agent</dt><dd id="agent-version">—</dd></div>
+        <div><dt>Timestamp</dt><dd id="timestamp">—</dd></div>
+      </dl>
+      <div class="reasons">
+        <h2>Reasons</h2>
+        <ul id="reasons"></ul>
+      </div>
+      <div class="provenance">
+        <h2>Provenance hash</h2>
+        <code id="provenance-hash">—</code>
+        <p class="hint">SHA-256 over metrics snapshot, signal, and agent version — auditable, no chain claims.</p>
+      </div>
+    </section>
+
+    <section id="empty-state" class="empty">
+      <p>No signal card yet. Run an evaluation to see the latest CLEAR / SHORT / HOLD output.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Builder: Wyndham Heaven / elghaly solo · English · local mock only</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
