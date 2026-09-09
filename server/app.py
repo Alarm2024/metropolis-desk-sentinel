@@ -9,7 +9,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from agent.decision_log import append_decision, read_decisions, summarize_decisions, verify_log_integrity
 from agent.desk_agent import evaluate_desk
@@ -180,8 +180,15 @@ def decisions(limit: int = Query(default=20, ge=1, le=200)) -> DecisionsResponse
 @app.post("/api/verify", tags=["audit"])
 def verify_card(card: dict[str, Any]) -> dict[str, Any]:
     """Verify provenance_hash for a submitted card JSON."""
-    ok = verify_card_provenance(card)
-    return {"valid": ok, "provenance_hash": card.get("provenance_hash")}
+    required = ("provenance_hash", "metrics", "signal", "safe_hold", "trust_posture", "reason_codes")
+    missing = [field for field in required if field not in card]
+    if missing:
+        raise HTTPException(status_code=400, detail=f"malformed card: missing fields {missing}")
+    try:
+        ok = verify_card_provenance(card)
+    except (KeyError, TypeError, ValidationError) as exc:
+        raise HTTPException(status_code=400, detail=f"malformed card: {exc}") from exc
+    return {"valid": ok, "provenance_hash": card["provenance_hash"]}
 
 
 if PUBLIC_METRICS_ENABLED:

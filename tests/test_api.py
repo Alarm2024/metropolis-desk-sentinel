@@ -78,3 +78,34 @@ def test_verify_endpoint() -> None:
     res = client.post("/api/verify", json=card)
     assert res.status_code == 200
     assert res.json()["valid"] is True
+
+
+def test_verify_endpoint_malformed_body_returns_400() -> None:
+    res = client.post("/api/verify", json={})
+    assert res.status_code == 400
+    assert "malformed card" in res.json()["detail"]
+
+
+def test_evaluate_int_metric_fields_do_not_break_provenance() -> None:
+    """Regression: int-valued metrics must not 500 on append/verify."""
+    from agent.metrics import DeskMetrics
+    from agent.desk_agent import evaluate_desk
+    from agent.decision_log import append_decision
+
+    metrics = DeskMetrics(
+        symbol="API-INT",
+        bid_ask_bps=5,
+        volume_delta_pct=14,
+        order_flow_imbalance=0.72,
+        volatility_1h_pct=1,
+        liquidity_score=0.85,
+        spread_stability=0.9,
+        timestamp_ms=1725900000000,
+        seed="api-int-metrics",
+    )
+    card_dict = evaluate_desk(metrics).to_dict()
+    append_decision(card_dict)  # raises if provenance invalid
+
+    res = client.post("/api/verify", json=card_dict)
+    assert res.status_code == 200
+    assert res.json()["valid"] is True
