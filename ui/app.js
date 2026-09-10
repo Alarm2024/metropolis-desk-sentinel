@@ -43,8 +43,8 @@ function renderCard(card) {
   if (card.safe_hold) {
     safeHold.classList.remove("hidden");
     refusalPanel.classList.remove("hidden");
-    refusalCode.textContent = card.refusal_code || "SAFE_HOLD";
-    refusalReason.textContent = card.refusal_reason || "Agent refused directional action.";
+    refusalCode.textContent = card.refusal_code ?? "—";
+    refusalReason.textContent = card.refusal_reason ?? "—";
   } else {
     safeHold.classList.add("hidden");
     refusalPanel.classList.add("hidden");

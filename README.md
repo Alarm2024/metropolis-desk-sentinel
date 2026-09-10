@@ -67,7 +67,7 @@ python3 cli.py --scenario hold_thin_liquidity
 python3 -m pytest tests/ -v
 ```
 
-64 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain tamper detection, provenance verification, and API health.
+65 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain tamper detection, provenance verification, and API health.
 
 ---
 
@@ -117,7 +117,7 @@ curl -s http://127.0.0.1:8080/api/health | jq
 ```bash
 curl -s -X POST http://127.0.0.1:8080/api/evaluate \
   -H 'Content-Type: application/json' \
-  -d '{"seed":"metropolis-judge-001"}' | jq '.provenance_hash, .refusal_code, .trust_posture'
+  -d '{"seed":"metropolis-judge-001"}' | jq '.provenance_hash, .trust_posture, .refusal_code // "omitted"'
 ```
 
 Run twice — hash is identical.

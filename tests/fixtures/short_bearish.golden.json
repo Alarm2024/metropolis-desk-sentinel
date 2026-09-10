@@ -2,8 +2,6 @@
   "signal": "SHORT",
   "safe_hold": false,
   "trust_posture": "DIRECTIONAL",
-  "refusal_code": null,
-  "refusal_reason": null,
   "confidence": 0.653,
   "provenance_hash": "36aabaac8b967cb35dd29b3a125e0f359a940a4e80ea8a082a19750922823dc0",
   "schema_version": "2.0",
