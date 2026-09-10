@@ -67,7 +67,7 @@ python3 cli.py --scenario hold_thin_liquidity
 python3 -m pytest tests/ -v
 ```
 
-61 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain tamper detection, provenance verification, and API health.
+64 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain tamper detection, provenance verification, and API health.
 
 ---
 
