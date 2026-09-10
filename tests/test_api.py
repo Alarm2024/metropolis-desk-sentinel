@@ -64,6 +64,15 @@ def test_scenarios_list_and_evaluate() -> None:
     assert card["refusal_code"] == "EXEC_QUALITY"
 
 
+def test_directional_api_omits_refusal_fields() -> None:
+    """CLEAR/SHORT omit refusal_code — never null placeholders (F3 honesty)."""
+    card = client.post("/api/scenarios/clear_bullish/evaluate").json()
+    assert card["signal"] == "CLEAR"
+    assert card["trust_posture"] == "DIRECTIONAL"
+    assert "refusal_code" not in card
+    assert "refusal_reason" not in card
+
+
 def test_decisions_integrity() -> None:
     client.post("/api/evaluate", json={"seed": "log-test"})
     res = client.get("/api/decisions?limit=5")

@@ -72,6 +72,8 @@ curl -s -X POST http://127.0.0.1:8080/api/evaluate \
 
 Same `seed` → identical response and hash.
 
+**Refusal fields on CLEAR/SHORT:** `refusal_code` and `refusal_reason` are **omitted** (not `null`) when `trust_posture` is `DIRECTIONAL`. HOLD responses always include both fields with explicit enum codes (`EXEC_QUALITY`, `NO_EDGE`, `NEUTRAL_BAND`).
+
 ---
 
 ## Scenarios — `GET /api/scenarios` · `POST /api/scenarios/{name}/evaluate`

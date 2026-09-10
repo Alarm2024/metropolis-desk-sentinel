@@ -129,7 +129,12 @@ def metrics(
     return generate_mock_metrics(symbol=symbol, seed=seed).to_dict()
 
 
-@app.post("/api/evaluate", response_model=SignalCardSchema, tags=["evaluate"])
+@app.post(
+    "/api/evaluate",
+    response_model=SignalCardSchema,
+    response_model_exclude_none=True,
+    tags=["evaluate"],
+)
 def evaluate(body: EvaluateRequest | None = None, seed: str | None = Query(default=None)) -> dict[str, Any]:
     req = body or EvaluateRequest()
     effective_seed = req.seed if req.seed is not None else seed
@@ -151,7 +156,12 @@ def scenarios() -> list[ScenarioInfo]:
     return out
 
 
-@app.post("/api/scenarios/{name}/evaluate", response_model=SignalCardSchema, tags=["evaluate"])
+@app.post(
+    "/api/scenarios/{name}/evaluate",
+    response_model=SignalCardSchema,
+    response_model_exclude_none=True,
+    tags=["evaluate"],
+)
 def evaluate_scenario(name: str) -> dict[str, Any]:
     if name not in list_scenarios():
         raise HTTPException(status_code=404, detail=f"Unknown scenario: {name}")
