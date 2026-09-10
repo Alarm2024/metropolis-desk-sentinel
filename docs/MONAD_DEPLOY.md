@@ -26,7 +26,7 @@ Morning Light Desk Sentinel produces auditable signal cards with a `provenance_h
 | Validation / honesty posture | `trust_posture` (`REFUSAL` \| `DIRECTIONAL`) | REFUSAL = agent refused to fake conviction |
 | Validation evidence | `refusal_code`, `refusal_reason`, `reason_codes` | Machine + human audit trail for refusals |
 | Integrity digest | `provenance_hash` (SHA-256) | Replayable hash over identity + metrics + signal + posture |
-| Temporal anchor | `timestamp_ms` | Wall-clock ms at emission (local); on-chain: block time |
+| Temporal anchor | `timestamp_ms` | Seeded demos: seed-derived ms for deterministic hashes; unseeded local runs: wall-clock ms. On-chain: block time |
 | Decision history | `decision_log.jsonl` hash chain | `prev_hash` → `entry_hash` per append; tamper-evident |
 
 **Provenance payload** (what gets hashed today):
