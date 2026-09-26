@@ -23,18 +23,26 @@ UI_DIR = ROOT / "ui"
 
 PUBLIC_METRICS_ENABLED = os.environ.get("PUBLIC_METRICS", "").lower() in ("1", "true", "yes")
 
+# Caps on user-supplied symbol/seed strings. These are demo/labeling fields,
+# not identifiers with an inherent length, and are written into every
+# evaluated card and appended to the decision log — with no cap, a single
+# request could write an arbitrarily large string to the log for every
+# future entry that includes it (F6: log file grows unbounded).
+MAX_SYMBOL_LEN = 32
+MAX_SEED_LEN = 128
+
 app = FastAPI(
     title="Morning Light Desk Sentinel",
     description=(
         "Trust / Identity & AI Infrastructure for Metropolis Monad. "
-        "Mock desk signals with SAFE HOLD honesty, provenance hashing, and append-only audit log. "
-        "No live trading. No secrets."
+        "Mock desk signals with SAFE HOLD honesty, provenance hashing, and an append-only decision log. "
+        "No order execution. No secrets."
     ),
     version=AGENT_VERSION,
     openapi_tags=[
         {"name": "health", "description": "Liveness and mode flags"},
         {"name": "evaluate", "description": "Run desk agent on mock or fixture metrics"},
-        {"name": "audit", "description": "Decision log and provenance verification"},
+        {"name": "decisions", "description": "Decision log and provenance verification"},
         {"name": "schema", "description": "Typed card schema for judges"},
         {"name": "public", "description": "Optional keyless read-only aggregates"},
     ],
@@ -44,8 +52,12 @@ _last_card: dict[str, Any] | None = None
 
 
 class EvaluateRequest(BaseModel):
-    seed: str | None = Field(default=None, description="Deterministic demo seed — same seed, same hash")
-    symbol: str = Field(default="MLDS-MOCK", description="Mock symbol label")
+    seed: str | None = Field(
+        default=None,
+        max_length=MAX_SEED_LEN,
+        description="Deterministic demo seed — same seed, same hash",
+    )
+    symbol: str = Field(default="MLDS-MOCK", max_length=MAX_SYMBOL_LEN, description="Mock symbol label")
 
 
 class HealthResponse(BaseModel):
@@ -73,12 +85,20 @@ def _card_dict(card: SignalCardSchema) -> dict[str, Any]:
     return card.to_dict()
 
 
+def _append_or_409(card_dict: dict[str, Any]) -> None:
+    """Append to the decision log; a corrupt log yields a clear 409, not a 500."""
+    try:
+        append_decision(card_dict)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
 def _run_evaluation(seed: str | None = None, symbol: str = "MLDS-MOCK") -> dict[str, Any]:
     global _last_card
     metrics = generate_mock_metrics(symbol=symbol, seed=seed)
     card = evaluate_desk(metrics)
     card_dict = _card_dict(card)
-    append_decision(card_dict)
+    _append_or_409(card_dict)
     _last_card = card_dict
     return card_dict
 
@@ -88,7 +108,7 @@ def _run_scenario(name: str) -> dict[str, Any]:
     metrics = load_fixture(name)
     card = evaluate_desk(metrics)
     card_dict = _card_dict(card)
-    append_decision(card_dict)
+    _append_or_409(card_dict)
     _last_card = card_dict
     return card_dict
 
@@ -115,7 +135,7 @@ def card_schema() -> dict[str, Any]:
         "trust_invariants": [
             "HOLD => safe_hold=true, trust_posture=REFUSAL, refusal_code required",
             "CLEAR/SHORT => safe_hold=false, trust_posture=DIRECTIONAL, no refusal fields",
-            "provenance_hash must verify against metrics + signal + reason_codes",
+            "provenance_hash must verify against metrics, signal, safe_hold, trust_posture, refusal fields, reason_codes, summary, reasons, confidence (shows fields unchanged since hashing; does not prove origin)",
             "decision log entries are hash-chained and provenance-checked on append",
         ],
     }
@@ -123,8 +143,8 @@ def card_schema() -> dict[str, Any]:
 
 @app.get("/api/metrics", tags=["evaluate"])
 def metrics(
-    seed: str | None = Query(default=None, description="Deterministic demo seed"),
-    symbol: str = Query(default="MLDS-MOCK"),
+    seed: str | None = Query(default=None, max_length=MAX_SEED_LEN, description="Deterministic demo seed"),
+    symbol: str = Query(default="MLDS-MOCK", max_length=MAX_SYMBOL_LEN),
 ) -> dict[str, Any]:
     return generate_mock_metrics(symbol=symbol, seed=seed).to_dict()
 
@@ -175,7 +195,7 @@ def last_card() -> dict[str, Any]:
     return _last_card
 
 
-@app.get("/api/decisions", response_model=DecisionsResponse, tags=["audit"])
+@app.get("/api/decisions", response_model=DecisionsResponse, tags=["decisions"])
 def decisions(limit: int = Query(default=20, ge=1, le=200)) -> DecisionsResponse:
     entries = read_decisions(limit=limit)
     ok, msg = verify_log_integrity()
@@ -187,10 +207,20 @@ def decisions(limit: int = Query(default=20, ge=1, le=200)) -> DecisionsResponse
     )
 
 
-@app.post("/api/verify", tags=["audit"])
+@app.post("/api/verify", tags=["decisions"])
 def verify_card(card: dict[str, Any]) -> dict[str, Any]:
     """Verify provenance_hash for a submitted card JSON."""
-    required = ("provenance_hash", "metrics", "signal", "safe_hold", "trust_posture", "reason_codes")
+    required = (
+        "provenance_hash",
+        "metrics",
+        "signal",
+        "safe_hold",
+        "trust_posture",
+        "reason_codes",
+        "summary",
+        "reasons",
+        "confidence",
+    )
     missing = [field for field in required if field not in card]
     if missing:
         raise HTTPException(status_code=400, detail=f"malformed card: missing fields {missing}")

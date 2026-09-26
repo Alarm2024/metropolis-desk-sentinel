@@ -118,3 +118,22 @@ def test_evaluate_int_metric_fields_do_not_break_provenance() -> None:
     res = client.post("/api/verify", json=card_dict)
     assert res.status_code == 200
     assert res.json()["valid"] is True
+
+
+def test_malformed_log_line_does_not_500() -> None:
+    client.post("/api/evaluate", json={"seed": "malformed-log"})
+    log_path = Path(os.environ["DECISION_LOG_PATH"])
+    with log_path.open("a", encoding="utf-8") as fh:
+        fh.write("{not json\n")
+    res = client.get("/api/decisions?limit=5")
+    assert res.status_code == 200
+    assert res.json()["integrity_ok"] is False
+    res = client.post("/api/evaluate", json={"seed": "malformed-log-2"})
+    assert res.status_code == 409
+
+
+def test_symbol_and_seed_length_capped() -> None:
+    assert client.post("/api/evaluate", json={"symbol": "X" * 33}).status_code == 422
+    assert client.post("/api/evaluate", json={"seed": "s" * 129}).status_code == 422
+    assert client.get("/api/metrics", params={"symbol": "X" * 33}).status_code == 422
+    assert client.post("/api/evaluate", json={"symbol": "X" * 32, "seed": "s" * 128}).status_code == 200
