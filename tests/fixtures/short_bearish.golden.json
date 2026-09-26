@@ -3,7 +3,7 @@
   "safe_hold": false,
   "trust_posture": "DIRECTIONAL",
   "confidence": 0.653,
-  "provenance_hash": "36aabaac8b967cb35dd29b3a125e0f359a940a4e80ea8a082a19750922823dc0",
+  "provenance_hash": "0c46df875211d2bf5671a3bec159b3f8ad009f501cfef87962db6d0ac62ca181",
   "schema_version": "2.0",
   "agent_version": "1.0.0-metropolis",
   "reason_codes": [

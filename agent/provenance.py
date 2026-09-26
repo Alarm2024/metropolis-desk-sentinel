@@ -1,4 +1,4 @@
-"""Provenance hashing and verification — reproducible audit trail."""
+"""Provenance hashing and verification — reproducible provenance trail."""
 
 from __future__ import annotations
 
@@ -26,6 +26,10 @@ def provenance_payload(
     refusal_code: str | None,
     trust_posture: str,
     reason_codes: list[str],
+    summary: str,
+    reasons: list[str],
+    confidence: float,
+    refusal_reason: str | None,
 ) -> dict[str, Any]:
     return {
         "agent_version": AGENT_VERSION,
@@ -36,6 +40,10 @@ def provenance_payload(
         "trust_posture": trust_posture,
         "refusal_code": refusal_code,
         "reason_codes": reason_codes,
+        "summary": summary,
+        "reasons": reasons,
+        "confidence": confidence,
+        "refusal_reason": refusal_reason,
     }
 
 
@@ -51,6 +59,10 @@ def build_provenance_hash(
     refusal_code: str | None,
     trust_posture: str,
     reason_codes: list[str],
+    summary: str,
+    reasons: list[str],
+    confidence: float,
+    refusal_reason: str | None,
 ) -> str:
     payload = provenance_payload(
         canonicalize_metrics(metrics),
@@ -59,12 +71,29 @@ def build_provenance_hash(
         refusal_code,
         trust_posture,
         reason_codes,
+        summary,
+        reasons,
+        confidence,
+        refusal_reason,
     )
     return compute_provenance_hash(payload)
 
 
 def verify_card_provenance(card: dict[str, Any] | SignalCardSchema) -> bool:
-    """Return True if provenance_hash matches recomputed hash from card fields."""
+    """Return True if provenance_hash matches the hash recomputed from card fields.
+
+    This only shows that the hashed fields (metrics, signal, safe_hold,
+    trust_posture, refusal_code, reason_codes, summary, reasons, confidence,
+    and refusal_reason) have not been edited since the hash was computed.
+
+    It does NOT prove who produced the card — there is no key involved, so
+    anyone can build a card and compute a matching hash for it. It also does
+    NOT prove the signal correctly follows from the metrics (this function
+    never re-runs evaluate_desk). And because it is a hash over the current
+    values with no external anchor, a full rewrite of a record with a
+    freshly recomputed hash, or truncation of a stored record, is not
+    detected by this check alone.
+    """
     if isinstance(card, SignalCardSchema):
         data = card.model_dump(mode="json")
     else:
@@ -77,5 +106,9 @@ def verify_card_provenance(card: dict[str, Any] | SignalCardSchema) -> bool:
         refusal_code=data.get("refusal_code"),
         trust_posture=data["trust_posture"],
         reason_codes=data["reason_codes"],
+        summary=data["summary"],
+        reasons=data["reasons"],
+        confidence=data["confidence"],
+        refusal_reason=data.get("refusal_reason"),
     )
     return expected == actual

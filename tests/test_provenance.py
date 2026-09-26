@@ -56,5 +56,38 @@ def test_hash_includes_reason_codes() -> None:
         refusal_code=d["refusal_code"],
         trust_posture=d["trust_posture"],
         reason_codes=d["reason_codes"],
+        summary=d["summary"],
+        reasons=d["reasons"],
+        confidence=d["confidence"],
+        refusal_reason=d.get("refusal_reason"),
     )
     assert recomputed == d["provenance_hash"]
+
+
+def test_edited_summary_or_reasons_fail() -> None:
+    """summary, reasons, confidence and refusal_reason are covered by the hash."""
+    base = evaluate_desk(load_fixture("hold_thin_liquidity")).to_dict()
+    for field, value in (
+        ("summary", "Clear — bullish desk bias within trust bounds"),
+        ("reasons", ["Composite score +0.90 above clear threshold"]),
+        ("confidence", 0.99),
+        ("refusal_reason", "edited"),
+    ):
+        card = dict(base)
+        card[field] = value
+        assert not verify_card_provenance(card), field
+
+
+def test_forged_clear_keeping_old_hash_fails() -> None:
+    """Flipping a HOLD card to CLEAR (public fields + summary) without the
+    original inputs to re-hash must not verify against the original hash."""
+    card = evaluate_desk(load_fixture("hold_thin_liquidity")).to_dict()
+    card.update(
+        signal="CLEAR",
+        safe_hold=False,
+        trust_posture="DIRECTIONAL",
+        refusal_code=None,
+        refusal_reason=None,
+        summary="Clear — bullish desk bias within trust bounds",
+    )
+    assert not verify_card_provenance(card)

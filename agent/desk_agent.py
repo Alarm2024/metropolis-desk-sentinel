@@ -14,7 +14,7 @@ from agent.schema import (
     TrustPosture,
 )
 
-# Trust thresholds — conservative by design; judges can audit these constants.
+# Trust thresholds — conservative by design; judges can review these constants.
 CLEAR_THRESHOLD = 0.42
 SHORT_THRESHOLD = -0.42
 MIN_CONFIDENCE = 0.55
@@ -138,6 +138,16 @@ def evaluate_desk(metrics: DeskMetrics) -> SignalCardSchema:
     refusal_code_str = refusal_code.value if refusal_code else None
     refusal_reason = REFUSAL_MESSAGES.get(refusal_code) if refusal_code else None
 
+    # Truncate BEFORE hashing, not after: the provenance hash must cover
+    # exactly what ends up stored on the card. Hashing the untruncated
+    # lists here and truncating only for the schema (the previous
+    # behavior) meant a card with more than 8 reasons/reason_codes would
+    # fail its own verification, since the hash and the stored value would
+    # no longer match.
+    reasons = reasons[:8]
+    reason_codes = reason_codes[:8]
+    rounded_confidence = round(confidence, 3)
+
     metrics_dict = metrics.to_dict()
     prov = build_provenance_hash(
         metrics=metrics_dict,
@@ -146,6 +156,10 @@ def evaluate_desk(metrics: DeskMetrics) -> SignalCardSchema:
         refusal_code=refusal_code_str,
         trust_posture=trust_posture.value,
         reason_codes=reason_codes,
+        summary=summary,
+        reasons=reasons,
+        confidence=rounded_confidence,
+        refusal_reason=refusal_reason,
     )
 
     return SignalCardSchema(
@@ -153,9 +167,9 @@ def evaluate_desk(metrics: DeskMetrics) -> SignalCardSchema:
         summary=summary,
         safe_hold=safe_hold,
         trust_posture=trust_posture,
-        confidence=round(confidence, 3),
-        reasons=reasons[:8],
-        reason_codes=reason_codes[:8],
+        confidence=rounded_confidence,
+        reasons=reasons,
+        reason_codes=reason_codes,
         metrics=metrics_dict,  # type: ignore[arg-type]
         provenance_hash=prov,
         agent_version=AGENT_VERSION,

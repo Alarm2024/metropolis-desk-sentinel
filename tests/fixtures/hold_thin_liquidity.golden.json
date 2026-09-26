@@ -5,7 +5,7 @@
   "refusal_code": "EXEC_QUALITY",
   "refusal_reason": "Refused directional action: execution quality below trust threshold",
   "confidence": 0.01,
-  "provenance_hash": "a2a412246eb43116f89863b5df8e002376e4488a15db359511c363d60c3ab179",
+  "provenance_hash": "0101d446493d0328ef528443f71ba8e44944591ced5e625c3573792855ca8983",
   "schema_version": "2.0",
   "agent_version": "1.0.0-metropolis",
   "reason_codes": [
