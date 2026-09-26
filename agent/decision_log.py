@@ -1,10 +1,11 @@
-"""Append-only, hash-chained decision log for auditable desk evaluations."""
+"""Append-only, hash-chained decision log for desk evaluations."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import os
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,6 +15,19 @@ from agent.provenance import verify_card_provenance
 
 DEFAULT_LOG_PATH = Path(os.environ.get("DECISION_LOG_PATH", "data/decision_log.jsonl"))
 LOG_SCHEMA_VERSION = "1.0"
+
+# Guards the read-last-entry-then-append sequence in append_decision. FastAPI
+# runs sync endpoints in a threadpool, so concurrent requests within one
+# process can otherwise race: two callers read the same "last entry" before
+# either has written, and both append with the same entry_id / prev_hash,
+# breaking the chain. This lock makes the read+append atomic within a
+# single process.
+#
+# It does NOT protect against multiple processes (e.g. running uvicorn with
+# --workers > 1, or multiple replicas) writing to the same log file at the
+# same time. That would additionally need a file lock (e.g. fcntl.flock on
+# POSIX) around the same critical section.
+_LOG_LOCK = threading.Lock()
 
 
 @dataclass(frozen=True)
@@ -56,48 +70,65 @@ def _last_entry_hash(path: Path) -> tuple[int, str | None]:
                 last_line = stripped
     if not last_line:
         return 0, None
-    raw = json.loads(last_line)
-    return int(raw["entry_id"]), raw["entry_hash"]
+    try:
+        raw = json.loads(last_line)
+        return int(raw["entry_id"]), raw["entry_hash"]
+    except (json.JSONDecodeError, KeyError, TypeError, ValueError, AttributeError) as exc:
+        # Refuse to extend a chain whose last entry can't be read, with a clear
+        # error instead of a raw JSON exception.
+        raise ValueError(f"decision log last entry is malformed; refusing to append ({exc})") from exc
 
 
 def append_decision(card: dict[str, Any], log_path: Path | None = None) -> LogEntry:
-    """Append one validated card to the hash-chained JSONL decision log."""
+    """Append one validated card to the hash-chained JSONL decision log.
+
+    Thread-safe within a single process (see _LOG_LOCK above).
+    """
     if not verify_card_provenance(card):
         raise ValueError("refusing to log card with invalid provenance_hash")
 
     path = log_path or DEFAULT_LOG_PATH
-    path.parent.mkdir(parents=True, exist_ok=True)
 
-    prev_id, prev_hash = _last_entry_hash(path)
-    entry_id = prev_id + 1
-    logged_at = _utc_now_iso()
+    with _LOG_LOCK:
+        path.parent.mkdir(parents=True, exist_ok=True)
 
-    body = {
-        "entry_id": entry_id,
-        "logged_at": logged_at,
-        "prev_hash": prev_hash,
-        "log_schema_version": LOG_SCHEMA_VERSION,
-        "card": card,
-    }
-    entry_hash = _entry_hash(body)
-    entry = LogEntry(
-        entry_id=entry_id,
-        logged_at=logged_at,
-        prev_hash=prev_hash,
-        entry_hash=entry_hash,
-        log_schema_version=LOG_SCHEMA_VERSION,
-        card=card,
-    )
+        prev_id, prev_hash = _last_entry_hash(path)
+        entry_id = prev_id + 1
+        logged_at = _utc_now_iso()
 
-    record = entry.to_dict()
-    with path.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(record, sort_keys=True, separators=(",", ":")))
-        fh.write("\n")
-    return entry
+        body = {
+            "entry_id": entry_id,
+            "logged_at": logged_at,
+            "prev_hash": prev_hash,
+            "log_schema_version": LOG_SCHEMA_VERSION,
+            "card": card,
+        }
+        entry_hash = _entry_hash(body)
+        entry = LogEntry(
+            entry_id=entry_id,
+            logged_at=logged_at,
+            prev_hash=prev_hash,
+            entry_hash=entry_hash,
+            log_schema_version=LOG_SCHEMA_VERSION,
+            card=card,
+        )
+
+        record = entry.to_dict()
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, sort_keys=True, separators=(",", ":")))
+            fh.write("\n")
+        return entry
 
 
 def read_decisions(limit: int = 100, log_path: Path | None = None) -> list[LogEntry]:
-    """Read decisions from the log (newest last when limit applied)."""
+    """Read decisions from the log (newest last when limit applied).
+
+    A line that fails to parse (malformed JSON, or missing a required key)
+    is skipped rather than raised, so a corrupted log doesn't 500 every
+    read. Callers that need to know whether the log itself is intact should
+    check verify_log_integrity() rather than infer it from what this
+    function returns.
+    """
     path = log_path or DEFAULT_LOG_PATH
     if not path.exists():
         return []
@@ -108,9 +139,9 @@ def read_decisions(limit: int = 100, log_path: Path | None = None) -> list[LogEn
             line = line.strip()
             if not line:
                 continue
-            raw = json.loads(line)
-            entries.append(
-                LogEntry(
+            try:
+                raw = json.loads(line)
+                entry = LogEntry(
                     entry_id=raw["entry_id"],
                     logged_at=raw["logged_at"],
                     prev_hash=raw.get("prev_hash"),
@@ -118,7 +149,11 @@ def read_decisions(limit: int = 100, log_path: Path | None = None) -> list[LogEn
                     log_schema_version=raw.get("log_schema_version", "1.0"),
                     card=raw["card"],
                 )
-            )
+                if not isinstance(entry.card, dict):
+                    continue
+            except (json.JSONDecodeError, KeyError, TypeError, AttributeError):
+                continue
+            entries.append(entry)
 
     if limit > 0 and len(entries) > limit:
         entries = entries[-limit:]
@@ -128,7 +163,10 @@ def read_decisions(limit: int = 100, log_path: Path | None = None) -> list[LogEn
 def verify_log_integrity(log_path: Path | None = None) -> tuple[bool, str]:
     """
     Verify hash chain and provenance for every entry.
-    Returns (ok, message).
+    Returns (ok, message). A line that fails to parse (malformed JSON, a
+    missing required key, or a card that no longer has the fields
+    verify_card_provenance needs) is reported as a broken chain at that
+    line rather than raised.
     """
     path = log_path or DEFAULT_LOG_PATH
     if not path.exists():
@@ -142,26 +180,29 @@ def verify_log_integrity(log_path: Path | None = None) -> tuple[bool, str]:
             line = line.strip()
             if not line:
                 continue
-            raw = json.loads(line)
+            try:
+                raw = json.loads(line)
 
-            if raw.get("entry_id") != expected_id:
-                return False, f"line {line_no}: expected entry_id {expected_id}, got {raw.get('entry_id')}"
+                if raw.get("entry_id") != expected_id:
+                    return False, f"line {line_no}: expected entry_id {expected_id}, got {raw.get('entry_id')}"
 
-            if raw.get("prev_hash") != prev_hash:
-                return False, f"line {line_no}: prev_hash chain broken"
+                if raw.get("prev_hash") != prev_hash:
+                    return False, f"line {line_no}: prev_hash chain broken"
 
-            body = {
-                "entry_id": raw["entry_id"],
-                "logged_at": raw["logged_at"],
-                "prev_hash": raw.get("prev_hash"),
-                "log_schema_version": raw.get("log_schema_version", "1.0"),
-                "card": raw["card"],
-            }
-            if _entry_hash(body) != raw["entry_hash"]:
-                return False, f"line {line_no}: entry_hash mismatch (tampered?)"
+                body = {
+                    "entry_id": raw["entry_id"],
+                    "logged_at": raw["logged_at"],
+                    "prev_hash": raw.get("prev_hash"),
+                    "log_schema_version": raw.get("log_schema_version", "1.0"),
+                    "card": raw["card"],
+                }
+                if _entry_hash(body) != raw["entry_hash"]:
+                    return False, f"line {line_no}: entry_hash mismatch (tampered?)"
 
-            if not verify_card_provenance(raw["card"]):
-                return False, f"line {line_no}: card provenance invalid"
+                if not verify_card_provenance(raw["card"]):
+                    return False, f"line {line_no}: card provenance invalid"
+            except (json.JSONDecodeError, KeyError, TypeError, ValueError, AttributeError) as exc:
+                return False, f"line {line_no}: malformed entry, chain broken ({exc})"
 
             prev_hash = raw["entry_hash"]
             expected_id += 1
