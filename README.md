@@ -13,7 +13,7 @@
 
 ## The pitch: desks need agents that refuse soft lies
 
-Trading desks drown in AI assistants that *sound* confident. They emit BUY/SELL on thin evidence, hide uncertainty behind polished prose, and leave no audit trail when they are wrong.
+Trading desks drown in AI assistants that *sound* confident. They emit BUY/SELL on thin evidence, hide uncertainty behind polished prose, and leave nothing to check afterward when they are wrong.
 
 **Morning Light Desk Sentinel** inverts that. The product is not prediction — it is **refusal**:
 
@@ -21,9 +21,15 @@ Trading desks drown in AI assistants that *sound* confident. They emit BUY/SELL 
 - When edge is too weak → **SAFE HOLD** with `NO_EDGE`
 - When score sits in the neutral band → **SAFE HOLD** with `NEUTRAL_BAND` — never fake CLEAR
 
-Every refusal ships with crisp human reasons, machine-readable `reason_codes`, a typed card schema, and a **SHA-256 provenance hash** anyone can replay and verify. Evaluations append to a **hash-chained decision log** — tamper-evident, no secrets, no wallet keys, no live trading.
+Every refusal ships with crisp human reasons, machine-readable `reason_codes`, a typed card schema, and a **SHA-256 provenance hash** that reproduces exactly when you replay the same seed. Evaluations append to a **hash-chained decision log**. No secrets, no wallet keys, no order execution.
 
-This is Trust / Identity infrastructure: an agent with a verifiable identity (`agent_version`), a versioned output contract (`schema_version`), and an honest posture field (`trust_posture: REFUSAL | DIRECTIONAL`).
+This is Trust / Identity infrastructure: an agent with a declared `agent_version`, a versioned output contract (`schema_version`), and an honest posture field (`trust_posture: REFUSAL | DIRECTIONAL`).
+
+### What the hash does and doesn't prove
+
+The provenance hash and the decision log's hash chain show that the hashed fields (metrics, signal, `trust_posture`, `reason_codes`, `refusal_code`, `refusal_reason`, `summary`, `reasons`, `confidence`) have not been edited since the hash was computed. That's it.
+
+They do **not** prove who produced a card — there's no key involved, so anyone can build a card and compute a matching hash for it. They do **not** prove the signal is correct for the metrics — verification never re-runs the agent. And because nothing anchors the chain outside the log file itself, deleting the tail of the log, or rewriting it end-to-end with freshly recomputed hashes, is not detected either.
 
 ---
 
@@ -35,6 +41,8 @@ cd metropolis-desk-sentinel
 chmod +x run.sh
 ./run.sh
 ```
+
+`run.sh` creates and uses its own `.venv` on first run, so it works on distros (Debian 12+, Ubuntu 24.04+) where installing into the system Python is blocked (`externally-managed-environment`).
 
 Open **http://127.0.0.1:8080**
 
@@ -56,9 +64,10 @@ Fixed seed `metropolis-demo-2026` → identical card and `provenance_hash` every
 ### CLI
 
 ```bash
-python3 -m pip install -r requirements.txt
-python3 cli.py --seed metropolis-judge-001 --verify
-python3 cli.py --scenario hold_thin_liquidity
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python cli.py --seed metropolis-judge-001 --verify
+python cli.py --scenario hold_thin_liquidity
 ```
 
 ### Tests (airtight)
@@ -67,7 +76,7 @@ python3 cli.py --scenario hold_thin_liquidity
 python3 -m pytest tests/ -v
 ```
 
-65 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain tamper detection, provenance verification, and API health.
+72 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance verification, and API health.
 
 ---
 
@@ -77,7 +86,7 @@ python3 -m pytest tests/ -v
 |------------|--------|
 | SAFE HOLD honesty | Every HOLD is `trust_posture=REFUSAL` with explicit `refusal_code` + `refusal_reason` |
 | Typed card schema | Pydantic-validated `SignalCardSchema` v2.0 — invariants enforced at emission |
-| Provenance | SHA-256 over metrics, signal, trust_posture, reason_codes, refusal_code |
+| Provenance | SHA-256 over metrics, signal, trust_posture, reason_codes, refusal_code, refusal_reason, summary, reasons, confidence |
 | Decision log | Append-only JSONL, hash-chained entries, provenance gate on append |
 | Deterministic demos | Same seed → identical metrics, card, and hash |
 | Judge scenarios | Five golden fixtures covering CLEAR, SHORT, and all refusal paths |
@@ -86,8 +95,9 @@ python3 -m pytest tests/ -v
 
 - Live market data, mainnet, testnet, or order execution
 - Wallet keys, Jito, MEV, or broker connectivity
-- LLM inference (rule-based only — auditable by design)
+- LLM inference (rule-based only — every rule is plain Python you can read in `agent/desk_agent.py`)
 - On-chain deployment in this repo (future stub: `docs/MONAD_DEPLOY.md`)
+- That the provenance hash or decision log prove origin, correctness, or that no record was removed or rewritten — see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove) above
 
 ---
 
@@ -104,6 +114,8 @@ Interactive docs: **http://127.0.0.1:8080/docs** · Full reference: [docs/API.md
 | `POST` | `/api/scenarios/{name}/evaluate` | Run fixture (deterministic) |
 | `GET` | `/api/decisions` | Hash-chained log + integrity status |
 | `POST` | `/api/verify` | Verify provenance_hash for a card JSON |
+| `GET` | `/api/metrics` | Preview mock metrics without evaluating/logging |
+| `GET` | `/api/last` | Most recent evaluated card in this process |
 | `GET` | `/api/public/summary` | Read-only aggregates (`PUBLIC_METRICS=1` only) |
 
 ### Health check (public, no auth)
@@ -153,7 +165,7 @@ Directional cards (`CLEAR` / `SHORT`) omit refusal fields and set `trust_posture
 |---------|----------|-----------------|
 | `clear_bullish` | CLEAR | Acts only when trust bounds pass |
 | `short_bearish` | SHORT | Bearish with good execution quality |
-| `hold_thin_liquidity` | HOLD + EXEC_QUALITY | Strong flow still refused on thin book |
+| `hold_thin_liquidity` | HOLD + EXEC_QUALITY | Thin liquidity alone triggers a refusal, even with neutral order flow and flat volume |
 | `hold_neutral_edge` | HOLD + NO_EDGE | No fake conviction on weak edge |
 | `hold_neutral_band` | HOLD + NEUTRAL_BAND | Neutral band → honest hold |
 
@@ -166,7 +178,7 @@ agent/
   schema.py         Typed Pydantic card schema + trust invariants
   desk_agent.py     Rule-based evaluator — SAFE HOLD is the product
   provenance.py     Hash compute + verify
-  decision_log.py   Hash-chained append-only audit log
+  decision_log.py   Hash-chained append-only decision log
   metrics.py        Deterministic mock metrics
 server/app.py       FastAPI + OpenAPI docs
 ui/                 Judge demo UI (branding, scenarios, log, verify)

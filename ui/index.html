@@ -87,13 +87,13 @@
             <code id="provenance-hash">—</code>
             <button id="copy-hash-btn" type="button" class="ghost-btn">Copy</button>
           </div>
-          <p class="hint">SHA-256 over schema, metrics, signal, trust_posture, reason_codes, and refusal_code.</p>
+          <p class="hint">SHA-256 over schema, metrics, signal, trust_posture, refusal fields, reason_codes, reasons, summary, and confidence. Shows these fields were not edited after hashing; does not prove who produced the card.</p>
         </div>
       </section>
 
       <section id="empty-state" class="panel empty-panel">
         <p class="empty-title">No signal card yet</p>
-        <p>Run a mock evaluation or pick a judge scenario to see CLEAR / SHORT / HOLD with full audit trail.</p>
+        <p>Run a mock evaluation or pick a judge scenario to see CLEAR / SHORT / HOLD with a full decision record.</p>
       </section>
 
       <section class="panel log-panel">
@@ -106,7 +106,7 @@
     </main>
 
     <footer class="site-footer">
-      <p>Builder: Wyndham Heaven / elghaly solo · English only · no live trading · no secrets</p>
+      <p>Builder: Wyndham Heaven / elghaly solo · English only · dry/read-only · no secrets</p>
     </footer>
   </div>
   <script src="/static/app.js"></script>

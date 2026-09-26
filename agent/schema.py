@@ -1,4 +1,4 @@
-"""Typed signal card schema — validated at emission, auditable by judges."""
+"""Typed signal card schema — validated at emission, reviewable by judges."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ class DeskMetricsSchema(BaseModel):
 
 
 class SignalCardSchema(BaseModel):
-    """Canonical desk signal card — every field is auditable."""
+    """Canonical desk signal card — every field is reviewable."""
 
     signal: Literal["CLEAR", "SHORT", "HOLD"]
     summary: str = Field(min_length=10)

@@ -20,9 +20,9 @@ Use these values in the Metropolis project profile. Portal display name may show
 |--------------|------|
 | **Project name** | Morning Light Desk Sentinel |
 | **Track** | Trust / Identity & AI Infrastructure |
-| **One-liner** | Desk agents that refuse soft lies — SAFE HOLD with provenance hash and hash-chained audit log. |
-| **Description** | Trading desks need AI that refuses to fake conviction. Morning Light Desk Sentinel emits HOLD with explicit `refusal_code` when execution quality is thin or edge is weak, ships SHA-256 provenance anyone can replay, and appends every evaluation to a tamper-evident hash-chained decision log. ERC-8004-inspired agent identity fields (`agent_version`, `schema_version`, `trust_posture`). Rule-based, deterministic, local mock — no wallet keys, no live trading. |
-| **Problem** | AI desk assistants sound confident but emit directional calls on thin evidence with no audit trail when wrong — a trust failure, not a model failure. |
+| **One-liner** | Desk agents that refuse soft lies — SAFE HOLD with a provenance hash and a hash-chained decision log. |
+| **Description** | Trading desks need AI that refuses to fake conviction. Morning Light Desk Sentinel emits HOLD with explicit `refusal_code` when execution quality is thin or edge is weak, ships a SHA-256 provenance hash that reproduces exactly on replay, and appends every evaluation to a hash-chained decision log that flags edits to a logged entry (not a deleted tail or a full rewrite — see README). ERC-8004-inspired agent fields (`agent_version`, `schema_version`, `trust_posture`). Rule-based, deterministic, local mock — no wallet keys, no order execution. |
+| **Problem** | AI desk assistants sound confident but emit directional calls on thin evidence with nothing to check afterward when wrong — a trust failure, not a model failure. |
 | **Solution** | SAFE HOLD honesty + provenance hash + hash-chained decision log + typed signal card schema with machine-readable refusal codes. |
 | **Demo link** | Run locally: `./run.sh` → http://127.0.0.1:8080 — see [DEMO.md](./DEMO.md). CLI: `./scripts/demo.sh` (15 s, deterministic). |
 | **Code link** | https://github.com/Alarm2024/metropolis-desk-sentinel |
@@ -35,7 +35,7 @@ Use these values in the Metropolis project profile. Portal display name may show
 
 ## Problem: soft-lie agents
 
-Trading desks and judges see AI assistants that *sound* confident. They emit directional calls on thin evidence, hide uncertainty behind polished prose, and leave no audit trail when they are wrong. That is a **trust failure** — not a model failure.
+Trading desks and judges see AI assistants that *sound* confident. They emit directional calls on thin evidence, hide uncertainty behind polished prose, and leave nothing to check afterward when they are wrong. That is a **trust failure** — not a model failure.
 
 ---
 
@@ -46,8 +46,8 @@ Trading desks and judges see AI assistants that *sound* confident. They emit dir
 | Layer | What it does |
 |-------|----------------|
 | **SAFE HOLD honesty** | When execution quality is thin, edge is weak, or score sits in a neutral band, the agent emits `HOLD` with explicit `refusal_code` and `refusal_reason` — never fake CLEAR |
-| **Provenance hash** | SHA-256 over metrics, signal, `trust_posture`, `reason_codes`, and refusal fields — anyone can replay and verify |
-| **Hash-chained decision log** | Append-only JSONL; each entry links to the prior `entry_hash`; tamper detection via `verify_log_integrity()` |
+| **Provenance hash** | SHA-256 over metrics, signal, `trust_posture`, `reason_codes`, `refusal_code`, `refusal_reason`, `summary`, `reasons`, and `confidence` — reproduces exactly on replay; confirms those fields weren't edited after hashing (not who produced the card, and not that the signal is correct for the metrics) |
+| **Hash-chained decision log** | Append-only JSONL; each entry links to the prior `entry_hash`; `verify_log_integrity()` flags an edited entry (a deleted tail or a full rewrite with recomputed hashes is not detected) |
 | **Agent identity (local, ERC-8004-inspired)** | Every card carries `agent_version`, `schema_version`, and `trust_posture` — ready for future on-chain attestation |
 
 No live feeds. No wallet keys. No Jito. No mainnet claims in this MVP.
@@ -109,7 +109,7 @@ python3 -m pip install -r requirements.txt
 python3 -m pytest tests/ -v
 ```
 
-64 tests: golden fixtures, 100-seed sweep (never fake CLEAR on thin books), hash-chain tamper detection, provenance verification, API health.
+72 tests: golden fixtures, 100-seed sweep (never fake CLEAR on thin books), hash-chain edit detection, provenance verification, API health.
 
 ---
 
@@ -124,7 +124,7 @@ Key paths:
 | `agent/schema.py` | Typed `SignalCardSchema` v2.0 + trust invariants |
 | `agent/desk_agent.py` | Rule-based evaluator — SAFE HOLD is the product |
 | `agent/provenance.py` | Hash compute + verify |
-| `agent/decision_log.py` | Hash-chained append-only audit log |
+| `agent/decision_log.py` | Hash-chained append-only decision log |
 | `scripts/demo.sh` | One-shot deterministic judge demo |
 | `docs/DEMO.md` | Exact judge clicks (UI + CLI) |
 | `docs/SCREENSHOT_SCRIPT.md` | GIF/video shot list for portal demo |
@@ -136,9 +136,9 @@ Key paths:
 
 ## What we claim vs. what we do not
 
-**Claim:** auditable local agent with verifiable identity fields, honest refusals, reproducible provenance, tamper-evident log, public `/api/health` liveness.
+**Claim:** local agent with honest refusals, a reproducible provenance hash, an edit-evident decision log (confirms hashed fields weren't changed after the fact — it does not catch a deleted tail or a full rewrite, and doesn't prove who produced a card; see README), and public `/api/health` liveness.
 
-**Do not claim:** live trading, mainnet/testnet deployment, LLM inference, or on-chain anchors in this repo (future work documented in `docs/MONAD_DEPLOY.md`).
+**Do not claim:** order execution, mainnet/testnet deployment, LLM inference, or on-chain anchors in this repo (future work documented in `docs/MONAD_DEPLOY.md`).
 
 ---
 
