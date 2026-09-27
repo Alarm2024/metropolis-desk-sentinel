@@ -120,6 +120,84 @@ def test_concurrent_appends_no_race(tmp_path: Path) -> None:
     assert ok, msg
 
 
+def test_partial_write_is_not_reported_as_chain_broken(tmp_path: Path) -> None:
+    """A reader blocked on the log lock must not observe a torn append line.
+
+    The writer holds _LOG_LOCK with a partial line flushed to disk. verify
+    and read both have to wait; once the writer finishes the file and
+    releases the lock, verify must not report a broken chain.
+    """
+    from agent.decision_log import _LOG_LOCK
+
+    log_path = tmp_path / "decisions.jsonl"
+    card = evaluate_desk(load_fixture("clear_bullish")).to_dict()
+    append_decision(card, log_path=log_path)
+    intact = log_path.read_bytes()
+
+    partial_visible = threading.Event()
+    release_writer = threading.Event()
+    verify_started = threading.Event()
+    read_started = threading.Event()
+    verify_finished = threading.Event()
+    read_finished = threading.Event()
+    outcome: dict[str, object] = {}
+
+    def hold_partial_write() -> None:
+        with _LOG_LOCK:
+            with log_path.open("a", encoding="utf-8") as fh:
+                fh.write('{"entry_id":2,"partial":')
+                fh.flush()
+            partial_visible.set()
+            assert release_writer.wait(timeout=5)
+            log_path.write_bytes(intact)
+
+    def verify_while_partial() -> None:
+        assert partial_visible.wait(timeout=5)
+        verify_started.set()
+        ok, msg = verify_log_integrity(log_path=log_path)
+        outcome["ok"] = ok
+        outcome["msg"] = msg
+        verify_finished.set()
+
+    def read_while_partial() -> None:
+        assert partial_visible.wait(timeout=5)
+        read_started.set()
+        outcome["entries"] = read_decisions(log_path=log_path)
+        read_finished.set()
+
+    writer = threading.Thread(target=hold_partial_write, daemon=True)
+    verifier = threading.Thread(target=verify_while_partial, daemon=True)
+    reader = threading.Thread(target=read_while_partial, daemon=True)
+    writer.start()
+    verifier.start()
+    reader.start()
+
+    blocked_verify = False
+    blocked_read = False
+    try:
+        assert partial_visible.wait(timeout=5)
+        assert verify_started.wait(timeout=5)
+        assert read_started.wait(timeout=5)
+        # Both calls are inside the locked section. If they did not take the
+        # lock they would return immediately and see the torn line.
+        blocked_verify = not verify_finished.wait(timeout=0.3)
+        blocked_read = not read_finished.wait(timeout=0.3)
+    finally:
+        release_writer.set()
+
+    writer.join(timeout=5)
+    assert verify_finished.wait(timeout=5)
+    assert read_finished.wait(timeout=5)
+    verifier.join(timeout=5)
+    reader.join(timeout=5)
+    assert blocked_verify
+    assert blocked_read
+
+    assert outcome["ok"] is True
+    assert "chain broken" not in str(outcome["msg"])
+    assert len(outcome["entries"]) == 1  # type: ignore[arg-type]
+
+
 def test_non_object_line_reports_broken_not_raise(tmp_path: Path) -> None:
     log_path = tmp_path / "decisions.jsonl"
     append_decision(evaluate_desk(load_fixture("clear_bullish")).to_dict(), log_path=log_path)

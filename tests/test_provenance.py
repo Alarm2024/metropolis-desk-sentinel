@@ -60,6 +60,9 @@ def test_hash_includes_reason_codes() -> None:
         reasons=d["reasons"],
         confidence=d["confidence"],
         refusal_reason=d.get("refusal_reason"),
+        agent_version=d["agent_version"],
+        schema_version=d["schema_version"],
+        timestamp_ms=d["timestamp_ms"],
     )
     assert recomputed == d["provenance_hash"]
 
@@ -106,10 +109,26 @@ def test_missing_required_field_fails_without_keyerror() -> None:
         "summary",
         "reasons",
         "confidence",
+        "agent_version",
+        "schema_version",
+        "timestamp_ms",
     ):
         card = dict(base)
         del card[field]
         assert verify_card_provenance(card) is False, field
+
+
+def test_unknown_top_level_or_metric_key_fails() -> None:
+    """Keys outside the card schema are rejected, not dropped before hashing."""
+    base = evaluate_desk(load_fixture("clear_bullish")).to_dict()
+    extra_top = dict(base)
+    extra_top["undocumented_claim"] = True
+    assert verify_card_provenance(extra_top) is False
+
+    extra_metric = dict(base)
+    extra_metric["metrics"] = dict(base["metrics"])
+    extra_metric["metrics"]["undocumented_risk"] = 1
+    assert verify_card_provenance(extra_metric) is False
 
 
 def test_wrong_typed_fields_fail_without_exception() -> None:

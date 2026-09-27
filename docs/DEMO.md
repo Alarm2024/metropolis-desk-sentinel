@@ -26,7 +26,7 @@ chmod +x scripts/demo.sh
 ```
 signal=HOLD  trust_posture=REFUSAL  refusal_code=EXEC_QUALITY
 agent_version=1.0.0-metropolis
-provenance_hash=9ec62436e10bba4bfecc6cd0908653df9cea4f55d1e9df0f9c7e727cf2e60442
+provenance_hash=5250739379c6334af880d7742d6541dac3712f8c86201beaa9ff29d68db15bcd
 provenance_valid=True
 === demo OK (exit 0) ===
 ```
@@ -129,6 +129,6 @@ Add `--verify` to any command to assert provenance on stdout.
 | Port 8080 in use | `PORT=8081 ./run.sh` then open `http://127.0.0.1:8081` |
 | Missing deps | `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt` (`./run.sh` does this for you) |
 | Empty scenario buttons | Refresh page; server must be running |
-| `integrity_ok: false` / 409 "decision log is malformed; append refused" after upgrading | This release changes the provenance hash formula (it now also covers summary, reasons, confidence, refusal_reason), so a `decision_log.jsonl` written by an older version fails verification. Move or rotate the old log (e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl`) before starting the new version. |
+| `integrity_ok: false` / 409 "decision log is malformed; append refused" after upgrading | This release changes the provenance hash formula (it now covers the card's agent_version, schema_version, top-level timestamp_ms, summary, reasons, confidence, and refusal_reason), so a `decision_log.jsonl` written by an older version fails verification. Move or rotate the old log (e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl`) before starting the new version. |
 
 See [SCREENSHOT_SCRIPT.md](./SCREENSHOT_SCRIPT.md) for a 60–90 s screen-recording shot list.

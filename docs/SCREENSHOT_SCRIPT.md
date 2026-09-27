@@ -51,7 +51,7 @@ Capture terminal output showing:
 
 ```
 signal=HOLD  trust_posture=REFUSAL  refusal_code=EXEC_QUALITY
-provenance_hash=9ec62436...
+provenance_hash=52507393...
 provenance_valid=True
 === demo OK (exit 0) ===
 ```

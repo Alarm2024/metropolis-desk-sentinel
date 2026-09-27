@@ -41,8 +41,9 @@ Pydantic model enforces invariants at emission:
 
 ```python
 payload = {
-  "agent_version": "1.0.0-metropolis",
-  "schema_version": "2.0",
+  "agent_version": "1.0.0-metropolis",  # value stored on the card
+  "schema_version": "2.0",              # value stored on the card
+  "timestamp_ms": 1725900000000,        # top-level card field
   "metrics": {...},
   "signal": "HOLD",
   "safe_hold": true,

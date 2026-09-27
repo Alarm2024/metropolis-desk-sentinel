@@ -27,13 +27,13 @@ This is Trust / Identity infrastructure: an agent with a declared `agent_version
 
 ### What the hash does and doesn't prove
 
-The provenance hash and the decision log's hash chain show that the hashed fields (metrics, signal, `trust_posture`, `reason_codes`, `refusal_code`, `refusal_reason`, `summary`, `reasons`, `confidence`) have not been edited since the hash was computed. That's it.
+The provenance hash and the decision log's hash chain show that the hashed fields (the card's `agent_version`, `schema_version`, and top-level `timestamp_ms`, plus metrics, signal, `trust_posture`, `reason_codes`, `refusal_code`, `refusal_reason`, `summary`, `reasons`, `confidence`) have not been edited since the hash was computed. Unknown keys on the card or inside metrics fail verification. That's it.
 
 They do **not** prove who produced a card — there's no key involved, so anyone can build a card and compute a matching hash for it. They do **not** prove the signal is correct for the metrics — verification never re-runs the agent. And because nothing anchors the chain outside the log file itself, deleting the tail of the log, or rewriting it end-to-end with freshly recomputed hashes, is not detected either.
 
 ### Upgrading: old decision logs will not verify
 
-This release changes the provenance hash formula (summary, reasons, confidence, and refusal_reason are now hashed). Decision logs written by older versions will therefore fail verification (`integrity_ok: false`, and new appends get HTTP 409). Before deploying, move or rotate the old log, e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl` (or point `DECISION_LOG_PATH` at a fresh file).
+This release changes the provenance hash formula. The hash now covers the card's own `agent_version`, `schema_version`, and top-level `timestamp_ms`, along with summary, reasons, confidence, and refusal_reason. Decision logs written by older versions will therefore fail verification (`integrity_ok: false`, and new appends get HTTP 409). Before deploying, move or rotate the old log, e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl` (or point `DECISION_LOG_PATH` at a fresh file).
 
 ---
 
@@ -74,13 +74,13 @@ python cli.py --seed metropolis-judge-001 --verify
 python cli.py --scenario hold_thin_liquidity
 ```
 
-### Tests (airtight)
+### Tests
 
 ```bash
 python3 -m pytest tests/ -v
 ```
 
-74 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance verification, and API health.
+82 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance verification, and API health.
 
 ---
 
@@ -90,7 +90,7 @@ python3 -m pytest tests/ -v
 |------------|--------|
 | SAFE HOLD honesty | Every HOLD is `trust_posture=REFUSAL` with explicit `refusal_code` + `refusal_reason` |
 | Typed card schema | Pydantic-validated `SignalCardSchema` v2.0 — invariants enforced at emission |
-| Provenance | SHA-256 over metrics, signal, trust_posture, reason_codes, refusal_code, refusal_reason, summary, reasons, confidence |
+| Provenance | SHA-256 over the card's agent_version, schema_version, timestamp_ms, metrics, signal, trust_posture, reason_codes, refusal_code, refusal_reason, summary, reasons, confidence. Unknown keys fail verification |
 | Decision log | Append-only JSONL, hash-chained entries, provenance gate on append |
 | Deterministic demos | Same seed → identical metrics, card, and hash |
 | Judge scenarios | Five golden fixtures covering CLEAR, SHORT, and all refusal paths |

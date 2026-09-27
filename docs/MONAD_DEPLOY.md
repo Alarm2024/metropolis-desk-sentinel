@@ -35,6 +35,7 @@ Morning Light Desk Sentinel produces reviewable signal cards with a `provenance_
 {
   "agent_version": "1.0.0-metropolis",
   "schema_version": "2.0",
+  "timestamp_ms": 1725900000000,
   "metrics": { "...": "mock snapshot" },
   "signal": "HOLD",
   "safe_hold": true,

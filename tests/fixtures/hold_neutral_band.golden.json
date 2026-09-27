@@ -5,7 +5,7 @@
   "refusal_code": "NEUTRAL_BAND",
   "refusal_reason": "Refused directional action: score inside neutral band \u2014 no fake conviction",
   "confidence": 0.255,
-  "provenance_hash": "d73a8bef295d25c0418a30199346b18fe1c6924c3aa625a6b045b997028b895a",
+  "provenance_hash": "af68ea2499b8f9626b22a55e00f1dc34b634ac6ad8d6fe0bbd75570aa7e60eea",
   "schema_version": "2.0",
   "agent_version": "1.0.0-metropolis",
   "reason_codes": [

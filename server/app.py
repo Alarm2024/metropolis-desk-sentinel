@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, ValidationError
 
-from agent.decision_log import append_decision, read_decisions, summarize_decisions, verify_log_integrity
+from agent.decision_log import append_decision, snapshot_decisions, summarize_decisions
 from agent.desk_agent import evaluate_desk
 from agent.fixtures import list_scenarios, load_fixture
 from agent.metrics import generate_mock_metrics
@@ -143,7 +143,7 @@ def card_schema() -> dict[str, Any]:
         "trust_invariants": [
             "HOLD => safe_hold=true, trust_posture=REFUSAL, refusal_code required",
             "CLEAR/SHORT => safe_hold=false, trust_posture=DIRECTIONAL, no refusal fields",
-            "provenance_hash must verify against metrics, signal, safe_hold, trust_posture, refusal fields, reason_codes, summary, reasons, confidence (shows fields unchanged since hashing; does not prove origin)",
+            "provenance_hash must verify against the card's agent_version, schema_version, timestamp_ms, metrics, signal, safe_hold, trust_posture, refusal fields, reason_codes, summary, reasons, confidence; unknown keys fail verification (shows fields unchanged since hashing; does not prove origin)",
             "decision log entries are hash-chained and provenance-checked on append",
         ],
     }
@@ -205,8 +205,8 @@ def last_card() -> dict[str, Any]:
 
 @app.get("/api/decisions", response_model=DecisionsResponse, tags=["decisions"])
 def decisions(limit: int = Query(default=20, ge=1, le=200)) -> DecisionsResponse:
-    entries = read_decisions(limit=limit)
-    ok, msg = verify_log_integrity()
+    # One snapshot: count and integrity describe the same file contents.
+    entries, ok, msg = snapshot_decisions(limit=limit)
     return DecisionsResponse(
         count=len(entries),
         integrity_ok=ok,
@@ -228,6 +228,9 @@ def verify_card(card: dict[str, Any]) -> dict[str, Any]:
         "summary",
         "reasons",
         "confidence",
+        "agent_version",
+        "schema_version",
+        "timestamp_ms",
     )
     missing = [field for field in required if field not in card]
     if missing:

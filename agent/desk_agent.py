@@ -160,6 +160,9 @@ def evaluate_desk(metrics: DeskMetrics) -> SignalCardSchema:
         reasons=reasons,
         confidence=rounded_confidence,
         refusal_reason=refusal_reason,
+        agent_version=AGENT_VERSION,
+        schema_version=CARD_SCHEMA_VERSION,
+        timestamp_ms=metrics.timestamp_ms,
     )
 
     return SignalCardSchema(
