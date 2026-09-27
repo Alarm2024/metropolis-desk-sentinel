@@ -30,7 +30,7 @@ Pick one when implementing — **not required for `pytest` or `./scripts/demo.sh
 | [Foundry](https://book.getfoundry.sh/) | `forge init` in a separate branch; add `ISignalAnchor` implementation |
 | [Hardhat](https://hardhat.org/) | Same interface; deploy script reads env vars |
 
-Do **not** add `forge build` or `npx hardhat compile` to default CI unless the toolchain is guaranteed in the runner image. Python tests must stay green without Solidity tooling.
+Do **not** add `forge build` or `npx hardhat compile` to default CI unless the toolchain is known to be present in the runner image. Python tests must stay green without Solidity tooling.
 
 ---
 

@@ -6,7 +6,7 @@
 
 **Metropolis Monad · Trust / Identity & AI Infrastructure**
 
-The product is **SAFE HOLD honesty** — an auditable desk agent that refuses soft lies over synthetic mock data.
+The product is **SAFE HOLD honesty** — a reviewable desk agent that refuses soft lies over synthetic mock data.
 
 ---
 
@@ -35,25 +35,30 @@ Pydantic model enforces invariants at emission:
 
 - `HOLD` → `safe_hold=true`, `trust_posture=REFUSAL`, refusal fields required
 - `CLEAR` / `SHORT` → `safe_hold=false`, `trust_posture=DIRECTIONAL`, no refusal fields
-- `reasons` + `reason_codes` always present (human + machine audit trail)
+- `reasons` + `reason_codes` always present (human + machine record)
 
 ### 2. Provenance (`agent/provenance.py`)
 
 ```python
 payload = {
-  "agent_version": "1.0.0-metropolis",
-  "schema_version": "2.0",
+  "agent_version": "1.0.0-metropolis",  # value stored on the card
+  "schema_version": "2.0",              # value stored on the card
+  "timestamp_ms": 1725900000000,        # top-level card field
   "metrics": {...},
   "signal": "HOLD",
   "safe_hold": true,
   "trust_posture": "REFUSAL",
   "refusal_code": "EXEC_QUALITY",
   "reason_codes": ["THIN_LIQUIDITY", "REFUSAL_EXEC_QUALITY"],
+  "summary": "Hold — conditions untrusted for directional action",
+  "reasons": ["...", "SAFE HOLD: insufficient execution quality"],
+  "confidence": 0.01,
+  "refusal_reason": "Refused directional action: execution quality below trust threshold",
 }
 provenance_hash = sha256(json.dumps(payload, sort_keys=True))
 ```
 
-`verify_card_provenance()` recomputes and compares — used by API, log append gate, and UI.
+`verify_card_provenance()` recomputes and compares — used by API, log append gate, and UI. A match shows the hashed fields were not edited after hashing; it does not prove origin (no key — anyone can recompute a plain SHA-256 over all fields).
 
 ### 3. Decision log (`agent/decision_log.py`)
 
@@ -72,13 +77,14 @@ Each entry:
 
 - **Hash chain**: `prev_hash` links to prior `entry_hash`
 - **Provenance gate**: invalid hash → append rejected
-- **`verify_log_integrity()`**: detects tampering and broken chains
+- **Append lock**: a process-wide lock makes read-last-entry + append atomic (single process; multiple workers would need a file lock)
+- **`verify_log_integrity()`**: detects edited entries, broken chains and malformed lines (reported as broken, never raised); does not detect a deleted tail or a full rewrite with recomputed hashes
 
 ---
 
 ## Desk agent (`agent/desk_agent.py`)
 
-Conservative thresholds (auditable constants):
+Conservative thresholds (plain constants you can read):
 
 | Constant | Value | Purpose |
 |----------|-------|---------|
@@ -104,7 +110,7 @@ Conservative thresholds (auditable constants):
 ## Explicit non-goals
 
 - Live feeds, wallets, Jito, MEV, mainnet claims
-- LLM inference (rules only — predictable and auditable)
+- LLM inference (rules only — predictable and reviewable)
 - Secrets in repo
 
 ---

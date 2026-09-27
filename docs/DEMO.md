@@ -6,7 +6,7 @@
 **Track:** Trust / Identity & AI Infrastructure — Metropolis Monad  
 **Time:** ~90 seconds for the full UI path · ~15 seconds for CLI
 
-No wallet. No secrets. No live trading. Local mock only.
+No wallet. No secrets. Dry/read-only: no order execution. Local mock only.
 
 ---
 
@@ -26,7 +26,7 @@ chmod +x scripts/demo.sh
 ```
 signal=HOLD  trust_posture=REFUSAL  refusal_code=EXEC_QUALITY
 agent_version=1.0.0-metropolis
-provenance_hash=629c809f3227741a8b85f909e15f3b5f6069171df2ad0bdb72c909d6d9830619
+provenance_hash=5250739379c6334af880d7742d6541dac3712f8c86201beaa9ff29d68db15bcd
 provenance_valid=True
 === demo OK (exit 0) ===
 ```
@@ -68,7 +68,7 @@ Expect `"status": "ok"`, `"mode": "local-mock"`, `"schema_version": "2.0"`.
 | 4 | Check **Verified** in metadata | `valid ✓` (live provenance check) |
 | 5 | Scroll to **Decision log** | New entry `#N` · HOLD · EXEC_QUALITY · hash prefix |
 
-**Judge takeaway:** Strong flow still refused — agent will not fake CLEAR on a thin book.
+**Judge takeaway:** Thin liquidity alone triggers the refusal — order flow is neutral and volume is flat, and the agent still will not fake CLEAR on a thin book.
 
 ### 4. Click — directional only when trust passes (20 s)
 
@@ -85,7 +85,7 @@ Expect `"status": "ok"`, `"mode": "local-mock"`, `"schema_version": "2.0"`.
 | 1 | In **Demo seed**, type `metropolis-judge-001` | — |
 | 2 | Click **Evaluate mock desk** | Card updates; status `updated` |
 | 3 | Click **Evaluate mock desk** again | Identical card and **same provenance hash** |
-| 4 | Check **Decision log** pill | `chain ok` — hash-chained, tamper-evident |
+| 4 | Check **Decision log** pill | `chain ok` — hash-chained; flags an edited entry (not a deleted tail or a full rewrite) |
 
 ### 6. OpenAPI (optional, 10 s)
 
@@ -96,7 +96,8 @@ Open **http://127.0.0.1:8080/docs** — interactive API explorer for `/api/evalu
 ## Path C — Golden scenarios (CLI, all refusal paths)
 
 ```bash
-python3 -m pip install -r requirements.txt
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 
 python3 cli.py --scenario hold_thin_liquidity   # EXEC_QUALITY
 python3 cli.py --scenario hold_neutral_edge     # NO_EDGE
@@ -114,9 +115,9 @@ Add `--verify` to any command to assert provenance on stdout.
 | Claim | How to verify in 30 s |
 |-------|----------------------|
 | Agent refuses soft lies | Scenario `hold thin liquidity` → HOLD + EXEC_QUALITY |
-| Provenance is replayable | Same seed twice → identical `provenance_hash` |
-| Log is tamper-evident | UI shows **chain ok** after evaluations |
-| No live trading | `/api/health` → `"mode": "local-mock"` |
+| Provenance is replayable | Same seed twice → identical `provenance_hash` (shows hashed fields unchanged; does not prove who made the card) |
+| Log flags edited entries | UI shows **chain ok** after evaluations |
+| Dry/read-only, no order execution | `/api/health` → `"mode": "local-mock"` |
 | Typed schema | `/api/schema` → JSON Schema + trust invariants |
 
 ---
@@ -126,7 +127,8 @@ Add `--verify` to any command to assert provenance on stdout.
 | Issue | Fix |
 |-------|-----|
 | Port 8080 in use | `PORT=8081 ./run.sh` then open `http://127.0.0.1:8081` |
-| Missing deps | `python3 -m pip install -r requirements.txt` |
+| Missing deps | `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt` (`./run.sh` does this for you) |
 | Empty scenario buttons | Refresh page; server must be running |
+| `integrity_ok: false` / 409 "decision log is malformed; append refused" after upgrading | This release changes the provenance hash formula (it now covers the card's agent_version, schema_version, top-level timestamp_ms, summary, reasons, confidence, and refusal_reason), so a `decision_log.jsonl` written by an older version fails verification. Move or rotate the old log (e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl`) before starting the new version. |
 
 See [SCREENSHOT_SCRIPT.md](./SCREENSHOT_SCRIPT.md) for a 60–90 s screen-recording shot list.

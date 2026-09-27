@@ -26,8 +26,8 @@ Open **http://127.0.0.1:8080** in Chrome or Firefox.
 | 0:10 | Click **`hold thin liquidity`** under Judge scenarios | *Thin book → agent refuses* |
 | 0:15 | Hold on signal card: HOLD badge, REFUSAL, ⛔ SAFE HOLD | |
 | 0:20 | Zoom/crop **Why we refused** — `EXEC_QUALITY` + reason text | *Explicit refusal_code — no soft lie* |
-| 0:25 | Pan to **Verified: valid ✓** and **Provenance hash** | *SHA-256 anyone can replay* |
-| 0:30 | Scroll to **Decision log** — entry with hash prefix, pill **chain ok** | *Hash-chained audit trail* |
+| 0:25 | Pan to **Verified: valid ✓** and **Provenance hash** | *SHA-256 you can replay (shows fields unchanged, not origin)* |
+| 0:30 | Scroll to **Decision log** — entry with hash prefix, pill **chain ok** | *Hash-chained decision log* |
 | 0:35 | Click **`clear bullish`** | *Acts only when trust bounds pass* |
 | 0:40 | Show CLEAR + DIRECTIONAL, refusal panel gone | |
 | 0:45 | Type `metropolis-judge-001` in Demo seed | |
@@ -51,7 +51,7 @@ Capture terminal output showing:
 
 ```
 signal=HOLD  trust_posture=REFUSAL  refusal_code=EXEC_QUALITY
-provenance_hash=629c809f...
+provenance_hash=52507393...
 provenance_valid=True
 === demo OK (exit 0) ===
 ```
@@ -93,8 +93,8 @@ Export GIF ≤ **5 MB** for GitHub README; MP4 ≤ **2 min** for Metropolis port
 > When execution quality is thin, the agent emits SAFE HOLD — never a fake CLEAR.  
 > Here’s thin liquidity: HOLD, refusal code EXEC_QUALITY, provenance verified live.  
 > When trust bounds pass, we get CLEAR — directional, no refusal fields.  
-> Same seed, same hash — reproducible audit.  
-> Hash-chained decision log, chain OK. Local mock only — no wallet, no live trading.
+> Same seed, same hash — reproducible record.  
+> Hash-chained decision log, chain OK. Local mock only — no wallet, dry/read-only, no order execution.
 
 ---
 

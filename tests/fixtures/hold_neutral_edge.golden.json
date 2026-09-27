@@ -5,7 +5,7 @@
   "refusal_code": "NO_EDGE",
   "refusal_reason": "Refused directional action: composite score too weak to trust",
   "confidence": 0.101,
-  "provenance_hash": "7f67fd2942aec4dbba803afd6a49f75d36d60183ab8e4b38bce1f43c0d5f7f38",
+  "provenance_hash": "dd01e9fd7707fdde1000f99a0c9c5c8e91727ccb2c8d4039f91c6028e1ec559c",
   "schema_version": "2.0",
   "agent_version": "1.0.0-metropolis",
   "reason_codes": [

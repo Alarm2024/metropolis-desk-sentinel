@@ -11,7 +11,7 @@
 
 ## Intent
 
-Morning Light Desk Sentinel produces auditable signal cards with a `provenance_hash` and appends them to a hash-chained decision log. A future Monad deployment could anchor those hashes on-chain for immutable audit trails and bind agent identity to a deployer address.
+Morning Light Desk Sentinel produces reviewable signal cards with a `provenance_hash` and appends them to a hash-chained decision log. A future Monad deployment could anchor those hashes on-chain for an external, timestamped record and bind agent identity to a deployer address.
 
 ---
 
@@ -24,10 +24,10 @@ Morning Light Desk Sentinel produces auditable signal cards with a `provenance_h
 | Agent identity | `agent_version` (`1.0.0-metropolis`) | Semver pin; future: registry URI or contract address |
 | Output contract | `schema_version` (`2.0`) | Versioned card shape — breaking changes bump schema |
 | Validation / honesty posture | `trust_posture` (`REFUSAL` \| `DIRECTIONAL`) | REFUSAL = agent refused to fake conviction |
-| Validation evidence | `refusal_code`, `refusal_reason`, `reason_codes` | Machine + human audit trail for refusals |
-| Integrity digest | `provenance_hash` (SHA-256) | Replayable hash over identity + metrics + signal + posture |
+| Validation evidence | `refusal_code`, `refusal_reason`, `reason_codes` | Machine + human record of each refusal |
+| Integrity digest | `provenance_hash` (SHA-256) | Replayable hash over identity + metrics + signal + posture + reasons/summary/confidence/refusal fields |
 | Temporal anchor | `timestamp_ms` | Seeded demos: seed-derived ms for deterministic hashes; unseeded local runs: wall-clock ms. On-chain: block time |
-| Decision history | `decision_log.jsonl` hash chain | `prev_hash` → `entry_hash` per append; tamper-evident |
+| Decision history | `decision_log.jsonl` hash chain | `prev_hash` → `entry_hash` per append; flags an edited entry, but not a deleted tail or a full rewrite with recomputed hashes |
 
 **Provenance payload** (what gets hashed today):
 
@@ -35,16 +35,21 @@ Morning Light Desk Sentinel produces auditable signal cards with a `provenance_h
 {
   "agent_version": "1.0.0-metropolis",
   "schema_version": "2.0",
+  "timestamp_ms": 1725900000000,
   "metrics": { "...": "mock snapshot" },
   "signal": "HOLD",
   "safe_hold": true,
   "trust_posture": "REFUSAL",
   "refusal_code": "EXEC_QUALITY",
-  "reason_codes": ["THIN_LIQUIDITY", "REFUSAL_EXEC_QUALITY"]
+  "reason_codes": ["THIN_LIQUIDITY", "REFUSAL_EXEC_QUALITY"],
+  "summary": "Hold — conditions untrusted for directional action",
+  "reasons": ["...", "SAFE HOLD: insufficient execution quality"],
+  "confidence": 0.01,
+  "refusal_reason": "Refused directional action: execution quality below trust threshold"
 }
 ```
 
-Judges can verify any card with `verify_card_provenance()` or `POST /api/verify` without trusting the API operator.
+Judges can recompute any card's hash with `verify_card_provenance()` or `POST /api/verify`. A match only shows the hashed fields were not edited after hashing. It does **not** prove origin: there is no key, so anyone can build a card and compute a matching plain SHA-256 over all fields. Proving origin needs a signature or an external anchor (the future work below).
 
 ---
 

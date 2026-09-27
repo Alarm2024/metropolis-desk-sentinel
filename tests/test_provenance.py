@@ -56,5 +56,83 @@ def test_hash_includes_reason_codes() -> None:
         refusal_code=d["refusal_code"],
         trust_posture=d["trust_posture"],
         reason_codes=d["reason_codes"],
+        summary=d["summary"],
+        reasons=d["reasons"],
+        confidence=d["confidence"],
+        refusal_reason=d.get("refusal_reason"),
+        agent_version=d["agent_version"],
+        schema_version=d["schema_version"],
+        timestamp_ms=d["timestamp_ms"],
     )
     assert recomputed == d["provenance_hash"]
+
+
+def test_edited_summary_or_reasons_fail() -> None:
+    """summary, reasons, confidence and refusal_reason are covered by the hash."""
+    base = evaluate_desk(load_fixture("hold_thin_liquidity")).to_dict()
+    for field, value in (
+        ("summary", "Clear — bullish desk bias within trust bounds"),
+        ("reasons", ["Composite score +0.90 above clear threshold"]),
+        ("confidence", 0.99),
+        ("refusal_reason", "edited"),
+    ):
+        card = dict(base)
+        card[field] = value
+        assert not verify_card_provenance(card), field
+
+
+def test_forged_clear_keeping_old_hash_fails() -> None:
+    """Flipping a HOLD card to CLEAR (public fields + summary) without the
+    original inputs to re-hash must not verify against the original hash."""
+    card = evaluate_desk(load_fixture("hold_thin_liquidity")).to_dict()
+    card.update(
+        signal="CLEAR",
+        safe_hold=False,
+        trust_posture="DIRECTIONAL",
+        refusal_code=None,
+        refusal_reason=None,
+        summary="Clear — bullish desk bias within trust bounds",
+    )
+    assert not verify_card_provenance(card)
+
+
+def test_missing_required_field_fails_without_keyerror() -> None:
+    """A card missing any hashed field must verify False, not raise KeyError."""
+    base = evaluate_desk(load_fixture("clear_bullish")).to_dict()
+    for field in (
+        "provenance_hash",
+        "metrics",
+        "signal",
+        "safe_hold",
+        "trust_posture",
+        "reason_codes",
+        "summary",
+        "reasons",
+        "confidence",
+        "agent_version",
+        "schema_version",
+        "timestamp_ms",
+    ):
+        card = dict(base)
+        del card[field]
+        assert verify_card_provenance(card) is False, field
+
+
+def test_unknown_top_level_or_metric_key_fails() -> None:
+    """Keys outside the card schema are rejected, not dropped before hashing."""
+    base = evaluate_desk(load_fixture("clear_bullish")).to_dict()
+    extra_top = dict(base)
+    extra_top["undocumented_claim"] = True
+    assert verify_card_provenance(extra_top) is False
+
+    extra_metric = dict(base)
+    extra_metric["metrics"] = dict(base["metrics"])
+    extra_metric["metrics"]["undocumented_risk"] = 1
+    assert verify_card_provenance(extra_metric) is False
+
+
+def test_wrong_typed_fields_fail_without_exception() -> None:
+    card = evaluate_desk(load_fixture("clear_bullish")).to_dict()
+    card["metrics"] = "not-a-mapping"
+    assert verify_card_provenance(card) is False
+    assert verify_card_provenance(["not", "a", "dict"]) is False  # type: ignore[arg-type]

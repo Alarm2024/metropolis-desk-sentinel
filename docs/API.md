@@ -5,7 +5,7 @@
 **Base URL (local):** `http://127.0.0.1:8080`  
 **OpenAPI:** `http://127.0.0.1:8080/docs`
 
-No authentication. No secrets. No live trading — all evaluations use deterministic mock metrics.
+No authentication. No secrets. Dry/read-only, no order execution — all evaluations use deterministic mock metrics.
 
 ---
 
@@ -89,14 +89,14 @@ curl -s -X POST http://127.0.0.1:8080/api/scenarios/hold_thin_liquidity/evaluate
 
 ---
 
-## Audit — `GET /api/decisions` · `POST /api/verify`
+## Decisions — `GET /api/decisions` · `POST /api/verify`
 
 ```bash
 # Hash-chained log + integrity
 curl -s 'http://127.0.0.1:8080/api/decisions?limit=5' \
   | jq '{count, integrity_ok, integrity_message}'
 
-# Verify a card's provenance_hash
+# Verify a card's provenance_hash (shows hashed fields unchanged since hashing; does not prove origin)
 curl -s -X POST http://127.0.0.1:8080/api/verify \
   -H 'Content-Type: application/json' \
   -d @card.json | jq
@@ -115,7 +115,7 @@ curl -s -X POST http://127.0.0.1:8080/api/verify \
 | Variable | Default | Effect |
 |----------|---------|--------|
 | `PUBLIC_METRICS` | off | Set `1` / `true` / `yes` to expose `/api/public/summary` |
-| `DECISION_LOG_PATH` | `data/decision_log.jsonl` | Append-only audit log location |
+| `DECISION_LOG_PATH` | `data/decision_log.jsonl` | Append-only decision log location |
 
 No wallet keys. No RPC URLs in MVP.
 
