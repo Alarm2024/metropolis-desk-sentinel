@@ -130,6 +130,7 @@ def test_malformed_log_line_does_not_500() -> None:
     assert res.json()["integrity_ok"] is False
     res = client.post("/api/evaluate", json={"seed": "malformed-log-2"})
     assert res.status_code == 409
+    assert res.json()["detail"] == "decision log is malformed; append refused"
 
 
 def test_symbol_and_seed_length_capped() -> None:

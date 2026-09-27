@@ -91,3 +91,29 @@ def test_forged_clear_keeping_old_hash_fails() -> None:
         summary="Clear — bullish desk bias within trust bounds",
     )
     assert not verify_card_provenance(card)
+
+
+def test_missing_required_field_fails_without_keyerror() -> None:
+    """A card missing any hashed field must verify False, not raise KeyError."""
+    base = evaluate_desk(load_fixture("clear_bullish")).to_dict()
+    for field in (
+        "provenance_hash",
+        "metrics",
+        "signal",
+        "safe_hold",
+        "trust_posture",
+        "reason_codes",
+        "summary",
+        "reasons",
+        "confidence",
+    ):
+        card = dict(base)
+        del card[field]
+        assert verify_card_provenance(card) is False, field
+
+
+def test_wrong_typed_fields_fail_without_exception() -> None:
+    card = evaluate_desk(load_fixture("clear_bullish")).to_dict()
+    card["metrics"] = "not-a-mapping"
+    assert verify_card_provenance(card) is False
+    assert verify_card_provenance(["not", "a", "dict"]) is False  # type: ignore[arg-type]

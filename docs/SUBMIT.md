@@ -109,7 +109,7 @@ python3 -m pip install -r requirements.txt
 python3 -m pytest tests/ -v
 ```
 
-72 tests: golden fixtures, 100-seed sweep (never fake CLEAR on thin books), hash-chain edit detection, provenance verification, API health.
+74 tests: golden fixtures, 100-seed sweep (never fake CLEAR on thin books), hash-chain edit detection, provenance verification, API health.
 
 ---
 

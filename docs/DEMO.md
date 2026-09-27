@@ -129,5 +129,6 @@ Add `--verify` to any command to assert provenance on stdout.
 | Port 8080 in use | `PORT=8081 ./run.sh` then open `http://127.0.0.1:8081` |
 | Missing deps | `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt` (`./run.sh` does this for you) |
 | Empty scenario buttons | Refresh page; server must be running |
+| `integrity_ok: false` / 409 "decision log is malformed; append refused" after upgrading | This release changes the provenance hash formula (it now also covers summary, reasons, confidence, refusal_reason), so a `decision_log.jsonl` written by an older version fails verification. Move or rotate the old log (e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl`) before starting the new version. |
 
 See [SCREENSHOT_SCRIPT.md](./SCREENSHOT_SCRIPT.md) for a 60–90 s screen-recording shot list.

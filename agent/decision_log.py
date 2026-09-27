@@ -63,6 +63,7 @@ def _last_entry_hash(path: Path) -> tuple[int, str | None]:
     if not path.exists():
         return 0, None
     last_line = ""
+    # O(n) full-file scan; runs inside _LOG_LOCK (via append_decision), fine for demo-sized logs.
     with path.open(encoding="utf-8") as fh:
         for line in fh:
             stripped = line.strip()

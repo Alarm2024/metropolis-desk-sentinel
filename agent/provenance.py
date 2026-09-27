@@ -6,11 +6,29 @@ import hashlib
 import json
 from typing import Any
 
+from pydantic import ValidationError
+
 from agent.schema import (
     AGENT_VERSION,
     CARD_SCHEMA_VERSION,
     DeskMetricsSchema,
     SignalCardSchema,
+)
+
+
+# Card fields that must be present for verify_card_provenance to recompute
+# the hash. refusal_code and refusal_reason are optional (None for
+# directional cards) and are read with .get().
+_REQUIRED_CARD_FIELDS = (
+    "provenance_hash",
+    "metrics",
+    "signal",
+    "safe_hold",
+    "trust_posture",
+    "reason_codes",
+    "summary",
+    "reasons",
+    "confidence",
 )
 
 
@@ -98,17 +116,29 @@ def verify_card_provenance(card: dict[str, Any] | SignalCardSchema) -> bool:
         data = card.model_dump(mode="json")
     else:
         data = card
+    if not isinstance(data, dict):
+        return False
+    missing = [field for field in _REQUIRED_CARD_FIELDS if field not in data]
+    if missing:
+        # A card without the hashed fields cannot verify; report failure
+        # instead of raising KeyError.
+        return False
     expected = data["provenance_hash"]
-    actual = build_provenance_hash(
-        metrics=data["metrics"],
-        signal=data["signal"],
-        safe_hold=data["safe_hold"],
-        refusal_code=data.get("refusal_code"),
-        trust_posture=data["trust_posture"],
-        reason_codes=data["reason_codes"],
-        summary=data["summary"],
-        reasons=data["reasons"],
-        confidence=data["confidence"],
-        refusal_reason=data.get("refusal_reason"),
-    )
+    try:
+        actual = build_provenance_hash(
+            metrics=data["metrics"],
+            signal=data["signal"],
+            safe_hold=data["safe_hold"],
+            refusal_code=data.get("refusal_code"),
+            trust_posture=data["trust_posture"],
+            reason_codes=data["reason_codes"],
+            summary=data["summary"],
+            reasons=data["reasons"],
+            confidence=data["confidence"],
+            refusal_reason=data.get("refusal_reason"),
+        )
+    except (TypeError, ValueError, ValidationError):
+        # Wrong-typed fields (e.g. metrics not a mapping, or failing schema
+        # validation) are also a verification failure, not a crash.
+        return False
     return expected == actual

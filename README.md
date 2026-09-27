@@ -31,6 +31,10 @@ The provenance hash and the decision log's hash chain show that the hashed field
 
 They do **not** prove who produced a card — there's no key involved, so anyone can build a card and compute a matching hash for it. They do **not** prove the signal is correct for the metrics — verification never re-runs the agent. And because nothing anchors the chain outside the log file itself, deleting the tail of the log, or rewriting it end-to-end with freshly recomputed hashes, is not detected either.
 
+### Upgrading: old decision logs will not verify
+
+This release changes the provenance hash formula (summary, reasons, confidence, and refusal_reason are now hashed). Decision logs written by older versions will therefore fail verification (`integrity_ok: false`, and new appends get HTTP 409). Before deploying, move or rotate the old log, e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl` (or point `DECISION_LOG_PATH` at a fresh file).
+
 ---
 
 ## Quick start
@@ -76,7 +80,7 @@ python cli.py --scenario hold_thin_liquidity
 python3 -m pytest tests/ -v
 ```
 
-72 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance verification, and API health.
+74 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance verification, and API health.
 
 ---
 

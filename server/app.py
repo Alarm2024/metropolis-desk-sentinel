@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,8 @@ from agent.fixtures import list_scenarios, load_fixture
 from agent.metrics import generate_mock_metrics
 from agent.provenance import verify_card_provenance
 from agent.schema import AGENT_VERSION, CARD_SCHEMA_VERSION, SignalCardSchema
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parent.parent
 UI_DIR = ROOT / "ui"
@@ -86,11 +89,16 @@ def _card_dict(card: SignalCardSchema) -> dict[str, Any]:
 
 
 def _append_or_409(card_dict: dict[str, Any]) -> None:
-    """Append to the decision log; a corrupt log yields a clear 409, not a 500."""
+    """Append to the decision log; a corrupt log yields a clear 409, not a 500.
+
+    The HTTP detail is generic so internal parser/exception text is not echoed
+    to clients; the full exception is logged server-side.
+    """
     try:
         append_decision(card_dict)
     except ValueError as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
+        logger.exception("decision log append refused")
+        raise HTTPException(status_code=409, detail="decision log is malformed; append refused") from exc
 
 
 def _run_evaluation(seed: str | None = None, symbol: str = "MLDS-MOCK") -> dict[str, Any]:
