@@ -6,7 +6,7 @@
 
 **Status:** `ISignalAnchor.sol` is an interface + documentation only. No deployment and no keys.
 
-The deployable demo contract in this folder is [`SentinelLog.sol`](./SentinelLog.sol), the Monad Testnet log described in the main README's "Live (Monad Testnet)" section.
+The deployable demo contract in this folder is [`SentinelLog.sol`](./SentinelLog.sol), the Monad Testnet log described in the main README's "On Monad Testnet" section.
 
 This folder holds a minimal **SignalAnchor** interface for future Monad hash-anchoring of desk sentinel `provenance_hash` values. The Python MVP already computes SHA-256 digests locally; on-chain anchoring is a post-hackathon extension documented in [docs/MONAD_DEPLOY.md](../docs/MONAD_DEPLOY.md).
 

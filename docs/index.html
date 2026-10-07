@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Desk Sentinel on Monad Testnet</title>
+  <title>Morning Light Desk Sentinel on Monad Testnet</title>
   <meta name="description" content="Read-only view of Morning Light Desk Sentinel SAFE HOLD cards recorded on Monad Testnet. Demo only: no trading, no funds.">
   <style>
     :root {
@@ -100,7 +100,7 @@ cd metropolis-desk-sentinel
 ./scripts/demo.sh             # one-shot deterministic demo, exits 0</pre>
     <p>To try the on-chain log without testnet, use a local Anvil chain (needs <a href="https://book.getfoundry.sh/">Foundry</a>):</p>
 <pre>anvil --chain-id 10143 &amp;
-export PRIVATE_KEY=0x...      # paste one of the dev keys anvil prints
+export MONAD_TESTNET_KEY=0x... # paste one of the public dev keys anvil prints
 forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
 RPC_URL=http://127.0.0.1:8545 ./scripts/record_card.sh hold_thin_liquidity
 python3 -m http.server -d docs 8000

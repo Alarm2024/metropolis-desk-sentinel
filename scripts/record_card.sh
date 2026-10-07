@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Record one desk card on the SentinelLog contract (Monad Testnet by default).
 #
-#   export PRIVATE_KEY=0x...            # throwaway testnet key that deployed SentinelLog
+#   export MONAD_TESTNET_KEY=0x...            # throwaway testnet key that deployed SentinelLog
 #   ./scripts/record_card.sh hold_thin_liquidity
 #   ./scripts/record_card.sh --seed metropolis-judge-001
 #
@@ -16,7 +16,7 @@ if [[ $# -eq 0 ]]; then
   echo "usage: $0 <scenario> | --seed <seed>" >&2
   exit 64
 fi
-: "${PRIVATE_KEY:?set PRIVATE_KEY to your throwaway testnet key (never commit it)}"
+: "${MONAD_TESTNET_KEY:?set MONAD_TESTNET_KEY to your throwaway testnet key (never commit it)}"
 
 PY=python3
 [[ -x .venv/bin/python ]] && PY=.venv/bin/python

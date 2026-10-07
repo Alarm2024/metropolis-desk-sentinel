@@ -1,12 +1,10 @@
 # Morning Light Desk Sentinel
 
-✝️🧿🪬
-
-3️⃣🧿5️⃣
+*Repository: `metropolis-desk-sentinel`, our entry to the Metropolis Monad Hackathon. One product, one name.*
 
 **Track:** Trust / Identity & AI Infrastructure — [Metropolis Monad Hackathon](https://metropolis.monad.xyz)  
 **Builder:** Wyndham Heaven / elghaly solo  
-**Submit target:** ~October 13, 2026  
+**Deadline:** Oct 14, 2026 03:59 UTC  
 **Agent version:** `1.0.0-metropolis` · **Card schema:** `2.0`
 
 ---
@@ -37,36 +35,36 @@ This release changes the provenance hash formula. The hash now covers the card's
 
 ---
 
-## Live (Monad Testnet)
+## On Monad Testnet
 
-> **Status: not deployed yet.** The contract, tests, deploy script and read-only page are in this repo. The address below gets filled in once the maintainer deploys with their own throwaway testnet key. Until then the page says "Not deployed yet".
+> **Status: not deployed yet.** The contract, tests, deploy script and read-only page are in this repo. The address below gets filled in once the maintainer deploys with a throwaway testnet key. Until then the page says "Not deployed yet".
 
 | | |
 |---|---|
-| Page | <https://alarm2024.github.io/metropolis-desk-sentinel/> (GitHub Pages, served from `/docs`) |
+| Page | <https://alarm2024.github.io/metropolis-desk-sentinel/> (works after deploy: published by `.github/workflows/pages.yml` from `/docs` once this is on `main`; it shows recorded cards once the contract is deployed) |
 | Contract | `SentinelLog` at _pending deploy_ (recorded in [`deployments/monad-testnet.json`](./deployments/monad-testnet.json)) |
 | Network | Monad Testnet, chainId `10143`, RPC `https://testnet-rpc.monad.xyz` |
 | Explorer | `https://testnet.monadexplorer.com/address/<address>` |
 
-[`contracts/SentinelLog.sol`](./contracts/SentinelLog.sol) records one card per call: `record(bytes32 cardHash, uint8 verdict, string reason)`. Here `cardHash` is the card's `provenance_hash`, `verdict` is `0` for SAFE_HOLD and `1` for OK, and `reason` is the refusal code plus its reason. Each call emits a `Recorded` event and keeps the last 50 entries readable on-chain. Only the deployer (the `recorder`) can record. The page reads the latest entries over the public RPC with viem and needs no wallet.
+[`contracts/SentinelLog.sol`](./contracts/SentinelLog.sol) records one card per call: `record(bytes32 cardHash, uint8 verdict, string reason)`. Here `cardHash` is the card's `provenance_hash`, `verdict` is `0` for SAFE_HOLD and `1` for OK, and `reason` is the refusal code plus its reason. Each call emits a `Recorded` event and keeps the last 50 entries readable on-chain. Only the deployer (the `recorder`) can record. The page lists the latest recorded cards (hash, verdict, reason, block time in UTC), read over the public RPC with viem; no wallet needed.
 
 **Honesty:** this is a demo, on testnet only, and testnet MON has no value. It places no trades and no orders, and the contract holds no funds: it has no payable functions and nothing to withdraw. An entry shows that the recorder address published this card hash at this block time. It does not show that the verdict was right, and it does not change what the hash itself proves (see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove)).
 
-### Deploy it yourself (free, testnet only)
+### Deploy (maintainer only — judges don't need this)
 
-You need [Foundry](https://book.getfoundry.sh/getting-started/installation) and `git submodule update --init` (for `lib/forge-std`).
+Testnet MON only. You need [Foundry](https://book.getfoundry.sh/getting-started/installation) and `git submodule update --init` (for `lib/forge-std`).
 
 ```bash
 cast wallet new                      # fresh throwaway key; never use a wallet that holds real funds
-# fund that address with free testnet MON from the Monad faucet
-export PRIVATE_KEY=0x...             # set in your shell only; never commit it or write it to a tracked file
-forge script script/Deploy.s.sol --rpc-url monad_testnet --broadcast
+# fund that address with free testnet MON: https://faucet.monad.xyz
+read -rsp 'Testnet key: ' MONAD_TESTNET_KEY && export MONAD_TESTNET_KEY && ./scripts/deploy_testnet.sh
 ./scripts/record_card.sh hold_thin_liquidity    # record real SAFE HOLD cards from the local agent
 ./scripts/record_card.sh hold_neutral_band
 git add deployments/monad-testnet.json docs/deployments/monad-testnet.json
+git commit -m "Record SentinelLog address on Monad Testnet" && git push
 ```
 
-The deploy script refuses any chain other than 10143. It writes the address only when run with `--broadcast`. After deploying, replace _pending deploy_ above with the address, then enable Pages (Settings → Pages → Deploy from a branch → `main` / `/docs`).
+The key is read from the environment variable `MONAD_TESTNET_KEY` only: it is never a command-line argument, never in a file, and never committed. The deploy script refuses any chain other than 10143 and writes the address only when it broadcasts. After deploying, replace _pending deploy_ above with the address. Pages: Settings → Pages → Source → GitHub Actions.
 
 ---
 
@@ -114,7 +112,7 @@ python3 -m pytest tests/ -v
 forge test                      # SentinelLog contract + deploy script (needs Foundry)
 ```
 
-82 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance hash checks, and API health.
+82 Python + 14 Solidity tests: golden fixtures, a 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance hash checks, API health, and the SentinelLog contract and deploy script.
 
 ---
 
@@ -134,7 +132,7 @@ forge test                      # SentinelLog contract + deploy script (needs Fo
 - Real-time market data, mainnet, or order execution (the only chain use is the Monad Testnet log above)
 - Wallet keys, Jito, MEV, or broker connectivity
 - LLM inference (rule-based only — every rule is plain Python you can read in `agent/desk_agent.py`)
-- That a Monad Testnet record proves a verdict was right. It only shows the recorder published that hash at that time
+- That a Monad Testnet record proves a verdict was right (see the honesty note under [On Monad Testnet](#on-monad-testnet))
 - That the provenance hash or decision log prove origin, correctness, or that no record was removed or rewritten — see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove) above
 
 ---

@@ -10,7 +10,7 @@ contract DeployScriptTest is Test {
     uint256 internal constant DEV_KEY = 0xA11CE;
 
     function setUp() public {
-        vm.setEnv("PRIVATE_KEY", vm.toString(DEV_KEY));
+        vm.setEnv("MONAD_TESTNET_KEY", vm.toString(DEV_KEY));
     }
 
     function test_DeploysOnMonadTestnetWithDeployerAsRecorder() public {

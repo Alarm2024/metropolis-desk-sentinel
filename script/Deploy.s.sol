@@ -9,8 +9,11 @@ import {SentinelLog} from "../contracts/SentinelLog.sol";
  * Deploy SentinelLog to Monad Testnet (chainId 10143) and write the address to
  * deployments/monad-testnet.json (plus a copy under docs/ for the GitHub Pages site).
  *
- *   export PRIVATE_KEY=0x...   # a throwaway testnet key, never committed
- *   forge script script/Deploy.s.sol --rpc-url monad_testnet --broadcast
+ *   read -rsp 'Testnet key: ' MONAD_TESTNET_KEY && export MONAD_TESTNET_KEY
+ *   ./scripts/deploy_testnet.sh     # or: forge script script/Deploy.s.sol --rpc-url monad_testnet --broadcast
+ *
+ * The key is read from the environment variable MONAD_TESTNET_KEY and nowhere
+ * else: a throwaway testnet key, never a command-line argument, never committed.
  *
  * The deployer becomes the only `recorder`. Without --broadcast this is a dry run
  * and no file is written.
@@ -22,7 +25,7 @@ contract Deploy is Script {
     function run() external returns (SentinelLog sentinel) {
         require(block.chainid == MONAD_TESTNET_CHAIN_ID, "Deploy: Monad Testnet (chainId 10143) only");
 
-        uint256 pk = vm.envUint("PRIVATE_KEY");
+        uint256 pk = vm.envUint("MONAD_TESTNET_KEY");
         address deployer = vm.addr(pk);
 
         vm.startBroadcast(pk);
