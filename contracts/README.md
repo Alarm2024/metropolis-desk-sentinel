@@ -17,7 +17,7 @@ This folder holds a minimal **SignalAnchor** interface for future Monad hash-anc
 See [ISignalAnchor.sol](./ISignalAnchor.sol):
 
 - `anchor(bytes32 hash, string agentVersion, string schemaVersion, uint64 timestampMs)` — store one provenance digest
-- `getAnchor(bytes32 hash)` — read back anchor metadata for third-party verification
+- `getAnchor(bytes32 hash)` — read back anchor metadata for third-party hash checks
 
 `provenance_hash` from signal cards is 64-char lowercase hex; convert to `bytes32` before calling `anchor`.
 

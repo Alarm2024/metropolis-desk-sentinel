@@ -104,7 +104,7 @@ Complete every item before claiming testnet or mainnet deployment:
 
 - [ ] Map `agent_version` to on-chain agent registry entry (ERC-8004 Identity registry when available on Monad)
 - [ ] Pin deployer address ↔ agent_version in README and `/api/health`
-- [ ] Third-party verify: recompute hash locally, compare to on-chain `getAnchor(hash)`
+- [ ] Third-party check: recompute the hash locally and see whether it matches on-chain `getAnchor(hash)`
 
 ---
 

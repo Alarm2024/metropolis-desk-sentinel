@@ -86,7 +86,7 @@ async function verifyProvenance(card) {
       body: JSON.stringify(card),
     });
     const data = await res.json();
-    provenanceStatus.textContent = data.valid ? "valid ✓" : "invalid ✗";
+    provenanceStatus.textContent = data.valid ? "yes ✓" : "no ✗";
     provenanceStatus.className = data.valid ? "ok-text" : "err-text";
   } catch {
     provenanceStatus.textContent = "error";

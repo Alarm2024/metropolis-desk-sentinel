@@ -149,11 +149,11 @@ def _assert_decision_snapshot(body: dict) -> None:
         return
     assert body["integrity_ok"] is True, message
     assert "chain broken" not in message
-    prefix = "verified "
+    prefix = "hashes match for "
     suffix = " entries"
     assert message.startswith(prefix) and message.endswith(suffix), message
-    verified = int(message[len(prefix) : -len(suffix)])
-    assert verified == body["count"], message
+    matched = int(message[len(prefix) : -len(suffix)])
+    assert matched == body["count"], message
 
 
 @pytest.mark.parametrize(
@@ -192,7 +192,7 @@ def test_concurrent_decision_reads_during_writes() -> None:
     """HTTP reads during appends must not report a torn line as a broken chain.
 
     Each response's count and integrity message come from the same snapshot,
-    so "verified N entries" matches count whenever the limit covers the log.
+    so "hashes match for N entries" matches count whenever the limit covers the log.
     """
     n_writers = 4
     per_writer = 4

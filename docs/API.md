@@ -96,7 +96,7 @@ curl -s -X POST http://127.0.0.1:8080/api/scenarios/hold_thin_liquidity/evaluate
 curl -s 'http://127.0.0.1:8080/api/decisions?limit=5' \
   | jq '{count, integrity_ok, integrity_message}'
 
-# Verify a card's provenance_hash (shows hashed fields unchanged since hashing; does not prove origin)
+# Check whether a card's provenance_hash matches (a match shows hashed fields unchanged since hashing; it does not prove origin)
 curl -s -X POST http://127.0.0.1:8080/api/verify \
   -H 'Content-Type: application/json' \
   -d @card.json | jq
