@@ -37,6 +37,39 @@ This release changes the provenance hash formula. The hash now covers the card's
 
 ---
 
+## Live (Monad Testnet)
+
+> **Status: not deployed yet.** The contract, tests, deploy script and read-only page are in this repo. The address below gets filled in once the maintainer deploys with their own throwaway testnet key. Until then the page says "Not deployed yet".
+
+| | |
+|---|---|
+| Page | <https://alarm2024.github.io/metropolis-desk-sentinel/> (GitHub Pages, served from `/docs`) |
+| Contract | `SentinelLog` at _pending deploy_ (recorded in [`deployments/monad-testnet.json`](./deployments/monad-testnet.json)) |
+| Network | Monad Testnet, chainId `10143`, RPC `https://testnet-rpc.monad.xyz` |
+| Explorer | `https://testnet.monadexplorer.com/address/<address>` |
+
+[`contracts/SentinelLog.sol`](./contracts/SentinelLog.sol) records one card per call: `record(bytes32 cardHash, uint8 verdict, string reason)`. Here `cardHash` is the card's `provenance_hash`, `verdict` is `0` for SAFE_HOLD and `1` for OK, and `reason` is the refusal code plus its reason. Each call emits a `Recorded` event and keeps the last 50 entries readable on-chain. Only the deployer (the `recorder`) can record. The page reads the latest entries over the public RPC with viem and needs no wallet.
+
+**Honesty:** this is a demo, on testnet only, and testnet MON has no value. There is no live trading and no orders, and the contract holds no funds: it has no payable functions and nothing to withdraw. Nothing is guaranteed. An entry shows that the recorder address published this card hash at this block time. It does not show that the verdict was right, and it does not change what the hash itself proves (see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove)).
+
+### Deploy it yourself (free, testnet only)
+
+You need [Foundry](https://book.getfoundry.sh/getting-started/installation) and `git submodule update --init` (for `lib/forge-std`).
+
+```bash
+cast wallet new                      # fresh throwaway key; never use a wallet that holds real funds
+# fund that address with free testnet MON from the Monad faucet
+export PRIVATE_KEY=0x...             # set in your shell only; never commit it or write it to a tracked file
+forge script script/Deploy.s.sol --rpc-url monad_testnet --broadcast
+./scripts/record_card.sh hold_thin_liquidity    # record real SAFE HOLD cards from the local agent
+./scripts/record_card.sh hold_neutral_band
+git add deployments/monad-testnet.json docs/deployments/monad-testnet.json
+```
+
+The deploy script refuses any chain other than 10143. It writes the address only when run with `--broadcast`. After deploying, replace _pending deploy_ above with the address, then enable Pages (Settings → Pages → Deploy from a branch → `main` / `/docs`).
+
+---
+
 ## Quick start
 
 ```bash
@@ -78,6 +111,7 @@ python cli.py --scenario hold_thin_liquidity
 
 ```bash
 python3 -m pytest tests/ -v
+forge test                      # SentinelLog contract + deploy script (needs Foundry)
 ```
 
 82 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance verification, and API health.
@@ -97,10 +131,10 @@ python3 -m pytest tests/ -v
 
 ## What we do NOT claim
 
-- Live market data, mainnet, testnet, or order execution
+- Live market data, mainnet, or order execution (the only chain use is the Monad Testnet log above)
 - Wallet keys, Jito, MEV, or broker connectivity
 - LLM inference (rule-based only — every rule is plain Python you can read in `agent/desk_agent.py`)
-- On-chain deployment in this repo (future stub: `docs/MONAD_DEPLOY.md`)
+- That a Monad Testnet record proves a verdict was right. It only shows the recorder published that hash at that time
 - That the provenance hash or decision log prove origin, correctness, or that no record was removed or rewritten — see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove) above
 
 ---
@@ -188,8 +222,12 @@ server/app.py       FastAPI + OpenAPI docs
 ui/                 Judge demo UI (branding, scenarios, log, verify)
 scripts/demo.sh     One-shot deterministic judge demo (fixed seed)
 tests/fixtures/     Golden scenarios + expected outputs
-contracts/          SignalAnchor interface stub (future Monad anchor)
+contracts/          SentinelLog.sol (Monad Testnet log) + SignalAnchor interface stub
+test/               Foundry tests for SentinelLog and the deploy script
+script/             Deploy.s.sol (Monad Testnet) + Record.s.sol
+deployments/        monad-testnet.json: deployed address (written by Deploy.s.sol)
 docs/
+  index.html        GitHub Pages: read-only Monad Testnet view of recorded cards
   SUBMIT.md         Metropolis portal copy-paste + submission profile
   DEMO.md           Exact judge clicks (UI + CLI)
   SCREENSHOT_SCRIPT.md  GIF/video shot list for portal demo

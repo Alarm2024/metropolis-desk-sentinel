@@ -4,7 +4,9 @@
 
 3️⃣🧿5️⃣
 
-**Status:** Interface + documentation only. No deployment, no keys, no CI forge/hardhat requirement.
+**Status:** `ISignalAnchor.sol` is an interface + documentation only. No deployment and no keys.
+
+The deployable demo contract in this folder is [`SentinelLog.sol`](./SentinelLog.sol), the Monad Testnet log described in the main README's "Live (Monad Testnet)" section.
 
 This folder holds a minimal **SignalAnchor** interface for future Monad hash-anchoring of desk sentinel `provenance_hash` values. The Python MVP already computes SHA-256 digests locally; on-chain anchoring is a post-hackathon extension documented in [docs/MONAD_DEPLOY.md](../docs/MONAD_DEPLOY.md).
 
@@ -30,7 +32,7 @@ Pick one when implementing — **not required for `pytest` or `./scripts/demo.sh
 | [Foundry](https://book.getfoundry.sh/) | `forge init` in a separate branch; add `ISignalAnchor` implementation |
 | [Hardhat](https://hardhat.org/) | Same interface; deploy script reads env vars |
 
-Do **not** add `forge build` or `npx hardhat compile` to default CI unless the toolchain is known to be present in the runner image. Python tests must stay green without Solidity tooling.
+Foundry runs in its own CI job (`.github/workflows/foundry.yml`, installed via `foundry-rs/foundry-toolchain`). The Python job does not need Solidity tooling, and `pytest` / `./scripts/demo.sh` must stay green without it.
 
 ---
 

@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Desk Sentinel on Monad Testnet</title>
+  <meta name="description" content="Read-only view of Morning Light Desk Sentinel SAFE HOLD cards recorded on Monad Testnet. Demo only: no trading, no funds.">
+  <style>
+    :root {
+      --bg: #f7f6f2; --panel: #ffffff; --ink: #1d1f24; --muted: #5d6270; --line: #dedbd2;
+      --accent: #5b3fd1; --hold: #9a5b00; --hold-bg: #fff3dc; --ok: #1d7a46; --ok-bg: #e2f5ea;
+      --warn-bg: #fdecec; --warn: #a3262a; --code-bg: #f1efe8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #14151a; --panel: #1d1f26; --ink: #ecebe6; --muted: #a2a6b3; --line: #2f323c;
+        --accent: #a594ff; --hold: #ffc46b; --hold-bg: #3a2b12; --ok: #6fd69c; --ok-bg: #153325;
+        --warn-bg: #3b1a1c; --warn: #ff9a9e; --code-bg: #262932;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+    h1 { font-size: 1.7rem; margin: 0 0 4px; }
+    h2 { font-size: 1.15rem; margin: 0 0 12px; }
+    p { margin: 0 0 12px; }
+    a { color: var(--accent); }
+    .sub { color: var(--muted); margin-bottom: 20px; }
+    .banner {
+      background: var(--hold-bg); color: var(--ink); border: 1px solid var(--line);
+      border-radius: 10px; padding: 12px 14px; margin: 0 0 20px; font-size: 0.95rem;
+    }
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      padding: 18px; margin-bottom: 18px;
+    }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+    dt { color: var(--muted); }
+    dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+    code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em; }
+    code { background: var(--code-bg); padding: 1px 5px; border-radius: 5px; }
+    pre {
+      background: var(--code-bg); padding: 12px; border-radius: 8px; overflow-x: auto;
+      font-size: 0.85rem; margin: 0 0 12px;
+    }
+    .status { color: var(--muted); font-size: 0.95rem; }
+    .status.err { color: var(--warn); background: var(--warn-bg); padding: 8px 10px; border-radius: 8px; }
+    .cards { display: grid; gap: 10px; }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+    .card-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 6px; }
+    .badge { font-weight: 600; font-size: 0.8rem; padding: 2px 8px; border-radius: 999px; }
+    .badge.hold { color: var(--hold); background: var(--hold-bg); }
+    .badge.ok { color: var(--ok); background: var(--ok-bg); }
+    .meta { color: var(--muted); font-size: 0.88rem; }
+    .hash { overflow-wrap: anywhere; color: var(--muted); }
+    .reason { margin-top: 4px; }
+    label { color: var(--muted); font-size: 0.92rem; }
+    footer { color: var(--muted); font-size: 0.88rem; margin-top: 28px; }
+    @media (max-width: 560px) { dl { grid-template-columns: 1fr; } dt { margin-top: 6px; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Morning Light Desk Sentinel</h1>
+  <p class="sub">SAFE HOLD refusals recorded on Monad Testnet, read straight from the public RPC. No wallet needed.</p>
+
+  <div class="banner">
+    <strong>Demo only.</strong> This is a testnet log of the agent's verdicts. There is no trading here and no
+    real funds, and nothing is guaranteed. An entry shows that the recorder address published this card hash
+    at this block time. It does not show that the verdict was right.
+  </div>
+
+  <section class="panel" aria-labelledby="contract-h">
+    <h2 id="contract-h">Contract</h2>
+    <dl>
+      <dt>Network</dt><dd id="net">Monad Testnet (chainId 10143)</dd>
+      <dt>RPC</dt><dd class="mono" id="rpc">…</dd>
+      <dt>SentinelLog</dt><dd id="addr">…</dd>
+      <dt>Recorder</dt><dd id="recorder">…</dd>
+      <dt>Entries recorded</dt><dd id="total">…</dd>
+    </dl>
+  </section>
+
+  <section class="panel" aria-labelledby="cards-h">
+    <h2 id="cards-h">Latest SAFE HOLD cards</h2>
+    <p><label><input type="checkbox" id="show-ok"> Also show OK (non-refusal) entries</label></p>
+    <p class="status" id="status">Loading…</p>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="local-h">
+    <h2 id="local-h">Run local demo</h2>
+    <p>The agent itself runs on your machine. No keys and no network calls are needed:</p>
+<pre>git clone https://github.com/Alarm2024/metropolis-desk-sentinel.git
+cd metropolis-desk-sentinel
+./run.sh                      # UI at http://127.0.0.1:8080
+./scripts/demo.sh             # one-shot deterministic demo, exits 0</pre>
+    <p>To try the on-chain log without testnet, use a local Anvil chain (needs <a href="https://book.getfoundry.sh/">Foundry</a>):</p>
+<pre>anvil --chain-id 10143 &amp;
+export PRIVATE_KEY=0x...      # paste one of the dev keys anvil prints
+forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
+RPC_URL=http://127.0.0.1:8545 ./scripts/record_card.sh hold_thin_liquidity
+python3 -m http.server -d docs 8000
+# open http://127.0.0.1:8000/?rpc=http://127.0.0.1:8545</pre>
+    <p class="meta">This page also accepts <code>?address=0x…</code> to read a different SentinelLog deployment.</p>
+  </section>
+
+  <footer>
+    Source: <a href="https://github.com/Alarm2024/metropolis-desk-sentinel">github.com/Alarm2024/metropolis-desk-sentinel</a> · MIT
+  </footer>
+</main>
+
+<script type="module">
+  import { createPublicClient, http, isAddress } from "https://cdn.jsdelivr.net/npm/viem@2.57.3/+esm";
+
+  const DEFAULT_RPC = "https://testnet-rpc.monad.xyz";
+  const MONAD_TESTNET_ID = 10143;
+  const EXPLORER = "https://testnet.monadexplorer.com";
+  const SHOW_LATEST = 20;
+
+  const ABI = [
+    { type: "function", name: "recorder", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+    { type: "function", name: "totalRecorded", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+    {
+      type: "function", name: "latest", stateMutability: "view",
+      inputs: [{ name: "n", type: "uint256" }],
+      outputs: [{
+        type: "tuple[]",
+        components: [
+          { name: "cardHash", type: "bytes32" },
+          { name: "verdict", type: "uint8" },
+          { name: "timestamp", type: "uint64" },
+          { name: "blockNumber", type: "uint64" },
+          { name: "reason", type: "string" },
+        ],
+      }],
+    },
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  const rpc = params.get("rpc") || DEFAULT_RPC;
+  const isDefaultRpc = rpc === DEFAULT_RPC;
+  $("rpc").textContent = rpc;
+
+  function setStatus(text, isError = false) {
+    const el = $("status");
+    el.textContent = text;
+    el.className = isError ? "status err" : "status";
+    el.hidden = !text;
+  }
+
+  function addressNode(addr) {
+    if (!isDefaultRpc) {
+      const span = document.createElement("span");
+      span.className = "mono";
+      span.textContent = addr;
+      return span;
+    }
+    const a = document.createElement("a");
+    a.href = `${EXPLORER}/address/${addr}`;
+    a.className = "mono";
+    a.rel = "noopener";
+    a.textContent = addr;
+    return a;
+  }
+
+  function utc(seconds) {
+    return new Date(Number(seconds) * 1000).toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC");
+  }
+
+  function renderCards(entries) {
+    const showOk = $("show-ok").checked;
+    const shown = entries.filter((e) => showOk || e.verdict === 0);
+    const box = $("cards");
+    box.replaceChildren();
+    if (!shown.length) {
+      setStatus(entries.length ? "No SAFE HOLD entries among the latest records." : "No cards recorded yet.");
+      return;
+    }
+    setStatus("");
+    for (const e of shown) {
+      const card = document.createElement("article");
+      card.className = "card";
+      const head = document.createElement("div");
+      head.className = "card-head";
+      const badge = document.createElement("span");
+      badge.className = e.verdict === 0 ? "badge hold" : "badge ok";
+      badge.textContent = e.verdict === 0 ? "SAFE HOLD" : "OK";
+      const when = document.createElement("span");
+      when.className = "meta";
+      when.textContent = `${utc(e.timestamp)} · block ${e.blockNumber}`;
+      head.append(badge, when);
+      const hash = document.createElement("div");
+      hash.className = "mono hash";
+      hash.textContent = e.cardHash;
+      hash.title = "Card provenance_hash";
+      const reason = document.createElement("div");
+      reason.className = "reason";
+      reason.textContent = e.reason || "(no reason given)";
+      card.append(head, hash, reason);
+      box.append(card);
+    }
+  }
+
+  async function loadAddress() {
+    const fromQuery = params.get("address");
+    if (fromQuery) return fromQuery;
+    try {
+      const res = await fetch("./deployments/monad-testnet.json", { cache: "no-store" });
+      if (!res.ok) return null;
+      return (await res.json()).address || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function main() {
+    const address = await loadAddress();
+    if (!address || !isAddress(address)) {
+      $("addr").textContent = "Not deployed yet";
+      $("recorder").textContent = "-";
+      $("total").textContent = "-";
+      setStatus("SentinelLog has not been deployed to Monad Testnet yet. See the README for the deploy steps.");
+      return;
+    }
+    $("addr").replaceChildren(addressNode(address));
+
+    const client = createPublicClient({ transport: http(rpc) });
+    try {
+      const chainId = await client.getChainId();
+      if (chainId !== MONAD_TESTNET_ID) {
+        $("net").textContent = `chainId ${chainId} (not Monad Testnet)`;
+      }
+      const [recorder, total, entries] = await Promise.all([
+        client.readContract({ address, abi: ABI, functionName: "recorder" }),
+        client.readContract({ address, abi: ABI, functionName: "totalRecorded" }),
+        client.readContract({ address, abi: ABI, functionName: "latest", args: [BigInt(SHOW_LATEST)] }),
+      ]);
+      $("recorder").replaceChildren(addressNode(recorder));
+      $("total").textContent = `${total} (showing up to the latest ${SHOW_LATEST})`;
+      const rows = entries.map((e) => ({ ...e, verdict: Number(e.verdict) }));
+      renderCards(rows);
+      $("show-ok").addEventListener("change", () => renderCards(rows));
+    } catch (err) {
+      console.error(err);
+      setStatus(`Could not read the contract from ${rpc}: ${err.shortMessage || err.message}`, true);
+    }
+  }
+
+  main();
+</script>
+</body>
+</html>

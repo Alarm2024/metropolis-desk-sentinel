@@ -1,0 +1,8 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "contract": "SentinelLog",
+  "address": null,
+  "recorder": null,
+  "note": "Not deployed yet. Overwritten by script/Deploy.s.sol when run with --broadcast."
+}

@@ -5,6 +5,7 @@
 3️⃣🧿5️⃣
 
 **Status:** Not deployed. This document is a placeholder for future Trust / Identity work.  
+**Separate demo:** a minimal `SentinelLog` contract (Foundry, Monad Testnet only) now records card hashes + SAFE HOLD verdicts for a read-only page. See the README section "Live (Monad Testnet)". It is not the `SignalAnchor` design below.  
 **MVP scope:** local mock agent + SHA-256 provenance + hash-chained decision log — **no mainnet or testnet claims**.
 
 ---
