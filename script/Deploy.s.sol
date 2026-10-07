@@ -17,6 +17,7 @@ import {SentinelLog} from "../contracts/SentinelLog.sol";
  */
 contract Deploy is Script {
     uint256 internal constant MONAD_TESTNET_CHAIN_ID = 10143;
+    string internal constant MONAD_TESTNET_RPC = "https://testnet-rpc.monad.xyz";
 
     function run() external returns (SentinelLog sentinel) {
         require(block.chainid == MONAD_TESTNET_CHAIN_ID, "Deploy: Monad Testnet (chainId 10143) only");
@@ -39,6 +40,7 @@ contract Deploy is Script {
         string memory key = "deployment";
         vm.serializeString(key, "network", "monad-testnet");
         vm.serializeUint(key, "chainId", block.chainid);
+        vm.serializeString(key, "rpc", MONAD_TESTNET_RPC);
         vm.serializeString(key, "contract", "SentinelLog");
         vm.serializeAddress(key, "recorder", deployer);
         string memory json = vm.serializeAddress(key, "address", address(sentinel));

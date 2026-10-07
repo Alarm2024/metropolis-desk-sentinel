@@ -50,7 +50,7 @@ This release changes the provenance hash formula. The hash now covers the card's
 
 [`contracts/SentinelLog.sol`](./contracts/SentinelLog.sol) records one card per call: `record(bytes32 cardHash, uint8 verdict, string reason)`. Here `cardHash` is the card's `provenance_hash`, `verdict` is `0` for SAFE_HOLD and `1` for OK, and `reason` is the refusal code plus its reason. Each call emits a `Recorded` event and keeps the last 50 entries readable on-chain. Only the deployer (the `recorder`) can record. The page reads the latest entries over the public RPC with viem and needs no wallet.
 
-**Honesty:** this is a demo, on testnet only, and testnet MON has no value. There is no live trading and no orders, and the contract holds no funds: it has no payable functions and nothing to withdraw. Nothing is guaranteed. An entry shows that the recorder address published this card hash at this block time. It does not show that the verdict was right, and it does not change what the hash itself proves (see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove)).
+**Honesty:** this is a demo, on testnet only, and testnet MON has no value. It places no trades and no orders, and the contract holds no funds: it has no payable functions and nothing to withdraw. An entry shows that the recorder address published this card hash at this block time. It does not show that the verdict was right, and it does not change what the hash itself proves (see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove)).
 
 ### Deploy it yourself (free, testnet only)
 
@@ -131,7 +131,7 @@ forge test                      # SentinelLog contract + deploy script (needs Fo
 
 ## What we do NOT claim
 
-- Live market data, mainnet, or order execution (the only chain use is the Monad Testnet log above)
+- Real-time market data, mainnet, or order execution (the only chain use is the Monad Testnet log above)
 - Wallet keys, Jito, MEV, or broker connectivity
 - LLM inference (rule-based only — every rule is plain Python you can read in `agent/desk_agent.py`)
 - That a Monad Testnet record proves a verdict was right. It only shows the recorder published that hash at that time
