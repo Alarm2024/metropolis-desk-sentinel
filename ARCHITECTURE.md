@@ -109,7 +109,7 @@ Conservative thresholds (plain constants you can read):
 
 ## Explicit non-goals
 
-- Live feeds, wallets, Jito, MEV, mainnet claims
+- Real-time market feeds, wallets, Jito, MEV, mainnet claims
 - LLM inference (rules only — predictable and reviewable)
 - Secrets in repo
 

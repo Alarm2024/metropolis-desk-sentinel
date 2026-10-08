@@ -11,7 +11,7 @@ No authentication. No secrets. Dry/read-only, no order execution — all evaluat
 
 ## Health — `GET /api/health`
 
-Public liveness probe. Safe to expose on any deployed demo instance (read-only, no keys).
+Public health check. Safe to expose on any deployed demo instance (read-only, no keys).
 
 ### Request
 
@@ -35,7 +35,7 @@ curl -s http://127.0.0.1:8080/api/health
 | Field | Meaning |
 |-------|---------|
 | `status` | `"ok"` when the service is up |
-| `mode` | Always `"local-mock"` in this MVP — no live feeds |
+| `mode` | Always `"local-mock"` in this MVP — no real-time market feeds |
 | `agent_version` | Semver pin for agent identity (ERC-8004-inspired) |
 | `schema_version` | Signal card schema version (`2.0`) |
 | `public_metrics` | `true` only when `PUBLIC_METRICS=1` — enables `/api/public/summary` |

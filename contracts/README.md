@@ -40,4 +40,4 @@ Foundry runs in its own CI job (`.github/workflows/foundry.yml`, installed via `
 
 - No `ANCHOR_PRIVATE_KEY` or RPC URLs in this repo
 - No fake tx hashes in UI or docs until public testnet verification
-- README and submission profile link here as **future work**, not live deployment
+- README and submission profile link here as **future work**, not a deployment

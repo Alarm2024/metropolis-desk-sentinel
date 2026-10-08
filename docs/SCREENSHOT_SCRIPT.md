@@ -102,6 +102,6 @@ Export GIF ≤ **5 MB** for GitHub README; MP4 ≤ **2 min** for Metropolis port
 
 - Wallet connect, private keys, or mainnet/testnet claims
 - Fake transaction hashes or explorer links
-- Live market feeds or order execution
+- Real-time market feeds or order execution
 
 See [SUBMIT.md](./SUBMIT.md) for portal copy and [DEMO.md](./DEMO.md) for step-by-step judge clicks.
