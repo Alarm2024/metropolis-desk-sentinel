@@ -1,0 +1,9 @@
+{
+  "network": "monad-testnet",
+  "chainId": 10143,
+  "rpc": "https://testnet-rpc.monad.xyz",
+  "contract": "SentinelLog",
+  "address": null,
+  "recorder": null,
+  "note": "Not deployed yet. Overwritten by script/Deploy.s.sol when run with --broadcast."
+}

@@ -26,7 +26,7 @@ Open **http://127.0.0.1:8080** in Chrome or Firefox.
 | 0:10 | Click **`hold thin liquidity`** under Judge scenarios | *Thin book → agent refuses* |
 | 0:15 | Hold on signal card: HOLD badge, REFUSAL, ⛔ SAFE HOLD | |
 | 0:20 | Zoom/crop **Why we refused** — `EXEC_QUALITY` + reason text | *Explicit refusal_code — no soft lie* |
-| 0:25 | Pan to **Verified: valid ✓** and **Provenance hash** | *SHA-256 you can replay (shows fields unchanged, not origin)* |
+| 0:25 | Pan to **Hash matches: yes ✓** and **Provenance hash** | *SHA-256 you can replay (shows fields unchanged, not origin)* |
 | 0:30 | Scroll to **Decision log** — entry with hash prefix, pill **chain ok** | *Hash-chained decision log* |
 | 0:35 | Click **`clear bullish`** | *Acts only when trust bounds pass* |
 | 0:40 | Show CLEAR + DIRECTIONAL, refusal panel gone | |
@@ -91,7 +91,7 @@ Export GIF ≤ **5 MB** for GitHub README; MP4 ≤ **2 min** for Metropolis port
 
 > Morning Light Desk Sentinel is Trust infrastructure for trading desks.  
 > When execution quality is thin, the agent emits SAFE HOLD — never a fake CLEAR.  
-> Here’s thin liquidity: HOLD, refusal code EXEC_QUALITY, provenance verified live.  
+> Here’s thin liquidity: HOLD, refusal code EXEC_QUALITY, and the provenance hash matches.  
 > When trust bounds pass, we get CLEAR — directional, no refusal fields.  
 > Same seed, same hash — reproducible record.  
 > Hash-chained decision log, chain OK. Local mock only — no wallet, dry/read-only, no order execution.
@@ -102,6 +102,6 @@ Export GIF ≤ **5 MB** for GitHub README; MP4 ≤ **2 min** for Metropolis port
 
 - Wallet connect, private keys, or mainnet/testnet claims
 - Fake transaction hashes or explorer links
-- Live market feeds or order execution
+- Real-time market feeds or order execution
 
 See [SUBMIT.md](./SUBMIT.md) for portal copy and [DEMO.md](./DEMO.md) for step-by-step judge clicks.

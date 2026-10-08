@@ -101,7 +101,7 @@ Conservative thresholds (plain constants you can read):
 
 | Surface | Role |
 |---------|------|
-| `ui/` | Judge demo — branding, scenarios, refusal panel, log tail, live verify |
+| `ui/` | Judge demo — branding, scenarios, refusal panel, log tail, provenance hash check |
 | `server/app.py` | REST API + OpenAPI at `/docs` |
 | `cli.py` | JSON evaluator with `--seed`, `--scenario`, `--verify` |
 
@@ -109,7 +109,7 @@ Conservative thresholds (plain constants you can read):
 
 ## Explicit non-goals
 
-- Live feeds, wallets, Jito, MEV, mainnet claims
+- Real-time market feeds, wallets, Jito, MEV, mainnet claims
 - LLM inference (rules only — predictable and reviewable)
 - Secrets in repo
 

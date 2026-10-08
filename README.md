@@ -1,12 +1,10 @@
 # Morning Light Desk Sentinel
 
-✝️🧿🪬
-
-3️⃣🧿5️⃣
+*Repository: `metropolis-desk-sentinel`, our entry to the Metropolis Monad Hackathon. One product, one name.*
 
 **Track:** Trust / Identity & AI Infrastructure — [Metropolis Monad Hackathon](https://metropolis.monad.xyz)  
 **Builder:** Wyndham Heaven / elghaly solo  
-**Submit target:** ~October 13, 2026  
+**Deadline:** Oct 14, 2026 03:59 UTC  
 **Agent version:** `1.0.0-metropolis` · **Card schema:** `2.0`
 
 ---
@@ -27,13 +25,48 @@ This is Trust / Identity infrastructure: an agent with a declared `agent_version
 
 ### What the hash does and doesn't prove
 
-The provenance hash and the decision log's hash chain show that the hashed fields (the card's `agent_version`, `schema_version`, and top-level `timestamp_ms`, plus metrics, signal, `safe_hold`, `trust_posture`, `reason_codes`, `refusal_code`, `refusal_reason`, `summary`, `reasons`, `confidence`) have not been edited since the hash was computed. Unknown keys on the card or inside metrics fail verification. That's it.
+The provenance hash and the decision log's hash chain show that the hashed fields (the card's `agent_version`, `schema_version`, and top-level `timestamp_ms`, plus metrics, signal, `safe_hold`, `trust_posture`, `reason_codes`, `refusal_code`, `refusal_reason`, `summary`, `reasons`, `confidence`) have not been edited since the hash was computed. Unknown keys on the card or inside metrics make the hash check fail. That's it.
 
-They do **not** prove who produced a card — there's no key involved, so anyone can build a card and compute a matching hash for it. They do **not** prove the signal is correct for the metrics — verification never re-runs the agent. And because nothing anchors the chain outside the log file itself, deleting the tail of the log, or rewriting it end-to-end with freshly recomputed hashes, is not detected either.
+They do **not** prove who produced a card — there's no key involved, so anyone can build a card and compute a matching hash for it. They do **not** prove the signal is correct for the metrics — the hash check never re-runs the agent. And because nothing anchors the chain outside the log file itself, deleting the tail of the log, or rewriting it end-to-end with freshly recomputed hashes, is not detected either.
 
-### Upgrading: old decision logs will not verify
+### Upgrading: old decision logs will fail the hash check
 
-This release changes the provenance hash formula. The hash now covers the card's own `agent_version`, `schema_version`, and top-level `timestamp_ms`, along with summary, reasons, confidence, and refusal_reason. Decision logs written by older versions will therefore fail verification (`integrity_ok: false`, and new appends get HTTP 409). Before deploying, move or rotate the old log, e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl` (or point `DECISION_LOG_PATH` at a fresh file).
+This release changes the provenance hash formula. The hash now covers the card's own `agent_version`, `schema_version`, and top-level `timestamp_ms`, along with summary, reasons, confidence, and refusal_reason. Decision logs written by older versions will therefore fail the hash check (`integrity_ok: false`, and new appends get HTTP 409). Before deploying, move or rotate the old log, e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl` (or point `DECISION_LOG_PATH` at a fresh file).
+
+---
+
+## On Monad Testnet
+
+> **Status: not deployed yet.** The contract, tests, deploy script and read-only page are in this repo. The address below gets filled in once the maintainer deploys with a throwaway testnet key. Until then the page says "Not deployed yet".
+
+| | |
+|---|---|
+| Page | <https://alarm2024.github.io/metropolis-desk-sentinel/> (works after deploy: published by `.github/workflows/pages.yml` from `/docs` once this is on `main`; it shows recorded cards once the contract is deployed) |
+| Contract | `SentinelLog` at _pending deploy_ (recorded in [`deployments/monad-testnet.json`](./deployments/monad-testnet.json)) |
+| Network | Monad Testnet, chainId `10143`, RPC `https://testnet-rpc.monad.xyz` |
+| Explorer | `https://testnet.monadscan.com/address/<address>` (Monadscan; MonadVision and Socialscan also index Monad Testnet) |
+
+[`contracts/SentinelLog.sol`](./contracts/SentinelLog.sol) records one card per call: `record(bytes32 cardHash, uint8 verdict, string reason)`. Here `cardHash` is the card's `provenance_hash`, `verdict` is `0` for SAFE_HOLD and `1` for OK, and `reason` is the refusal code plus its reason. Each call emits a `Recorded` event and keeps the last 50 entries readable on-chain. Only the deployer (the `recorder`) can record. The page lists the latest recorded cards (hash, verdict, reason, block time in UTC), read over the public RPC with viem; no wallet needed.
+
+**Honesty:** this is a demo, on testnet only, and testnet MON has no value. It places no trades and no orders, and the contract holds no funds: it has no payable functions and nothing to withdraw. An entry shows that the recorder address published this card hash at this block time. It does not show that the verdict was right, and it does not change what the hash itself proves (see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove)).
+
+### Deploy (maintainer only — judges don't need this)
+
+Step by step, with checks and fixes: [`docs/MONAD_DEPLOY.md`](./docs/MONAD_DEPLOY.md). In short:
+
+Testnet MON only. You need [Foundry](https://book.getfoundry.sh/getting-started/installation) and `git submodule update --init` (for `lib/forge-std`).
+
+```bash
+cast wallet new                      # fresh throwaway key; never use a wallet that holds real funds
+# fund that address with free testnet MON: https://faucet.monad.xyz
+read -rsp 'Testnet key: ' MONAD_TESTNET_KEY && export MONAD_TESTNET_KEY && ./scripts/deploy_testnet.sh
+./scripts/record_card.sh hold_thin_liquidity    # record real SAFE HOLD cards from the local agent
+./scripts/record_card.sh hold_neutral_band
+git add deployments/monad-testnet.json docs/deployments/monad-testnet.json
+git commit -m "Record SentinelLog address on Monad Testnet" && git push
+```
+
+The key is read from the environment variable `MONAD_TESTNET_KEY` only: it is never a command-line argument, never in a file, and never committed. The deploy script refuses any chain other than 10143 and writes the address only when it broadcasts. After deploying, replace _pending deploy_ above with the address. Pages: Settings → Pages → Source → GitHub Actions.
 
 ---
 
@@ -52,7 +85,7 @@ Open **http://127.0.0.1:8080**
 
 1. Enter a demo seed (e.g. `metropolis-judge-001`) for repeatable hashes
 2. Click **Evaluate mock desk** — or pick a **judge scenario** fixture
-3. Watch SAFE HOLD refusals surface with provenance verification live in the UI
+3. Watch SAFE HOLD refusals surface, with a provenance hash check in the UI
 
 ### One-shot demo (judges)
 
@@ -78,9 +111,10 @@ python cli.py --scenario hold_thin_liquidity
 
 ```bash
 python3 -m pytest tests/ -v
+forge test                      # SentinelLog contract + deploy script (needs Foundry)
 ```
 
-82 tests including golden fixtures, 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance verification, and API health.
+82 Python + 14 Solidity tests: golden fixtures, a 100-seed sweep (never fake CLEAR), hash-chain edit detection, provenance hash checks, API health, and the SentinelLog contract and deploy script.
 
 ---
 
@@ -90,17 +124,17 @@ python3 -m pytest tests/ -v
 |------------|--------|
 | SAFE HOLD honesty | Every HOLD is `trust_posture=REFUSAL` with explicit `refusal_code` + `refusal_reason` |
 | Typed card schema | Pydantic-validated `SignalCardSchema` v2.0 — invariants enforced at emission |
-| Provenance | SHA-256 over the card's agent_version, schema_version, timestamp_ms, metrics, signal, safe_hold, trust_posture, reason_codes, refusal_code, refusal_reason, summary, reasons, confidence. Unknown keys fail verification |
+| Provenance | SHA-256 over the card's agent_version, schema_version, timestamp_ms, metrics, signal, safe_hold, trust_posture, reason_codes, refusal_code, refusal_reason, summary, reasons, confidence. Unknown keys make the hash check fail |
 | Decision log | Append-only JSONL, hash-chained entries, provenance gate on append |
 | Deterministic demos | Same seed → identical metrics, card, and hash |
 | Judge scenarios | Five golden fixtures covering CLEAR, SHORT, and all refusal paths |
 
 ## What we do NOT claim
 
-- Live market data, mainnet, testnet, or order execution
+- Real-time market data, mainnet, or order execution (the only chain use is the Monad Testnet log above)
 - Wallet keys, Jito, MEV, or broker connectivity
 - LLM inference (rule-based only — every rule is plain Python you can read in `agent/desk_agent.py`)
-- On-chain deployment in this repo (future stub: `docs/MONAD_DEPLOY.md`)
+- That a Monad Testnet record proves a verdict was right (see the honesty note under [On Monad Testnet](#on-monad-testnet))
 - That the provenance hash or decision log prove origin, correctness, or that no record was removed or rewritten — see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove) above
 
 ---
@@ -111,13 +145,13 @@ Interactive docs: **http://127.0.0.1:8080/docs** · Full reference: [docs/API.md
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/health` | Public liveness — `status`, `mode: local-mock`, agent + schema version (no secrets) |
+| `GET` | `/api/health` | Public health check — `status`, `mode: local-mock`, agent + schema version (no secrets) |
 | `GET` | `/api/schema` | JSON Schema + trust invariants for judges |
 | `POST` | `/api/evaluate` | Evaluate mock desk. Body: `{"seed":"..."}` |
 | `GET` | `/api/scenarios` | List named judge fixtures |
 | `POST` | `/api/scenarios/{name}/evaluate` | Run fixture (deterministic) |
 | `GET` | `/api/decisions` | Hash-chained log + integrity status |
-| `POST` | `/api/verify` | Verify provenance_hash for a card JSON |
+| `POST` | `/api/verify` | Check whether provenance_hash matches a card JSON |
 | `GET` | `/api/metrics` | Preview mock metrics without evaluating/logging |
 | `GET` | `/api/last` | Most recent evaluated card in this process |
 | `GET` | `/api/public/summary` | Read-only aggregates (`PUBLIC_METRICS=1` only) |
@@ -188,8 +222,12 @@ server/app.py       FastAPI + OpenAPI docs
 ui/                 Judge demo UI (branding, scenarios, log, verify)
 scripts/demo.sh     One-shot deterministic judge demo (fixed seed)
 tests/fixtures/     Golden scenarios + expected outputs
-contracts/          SignalAnchor interface stub (future Monad anchor)
+contracts/          SentinelLog.sol (Monad Testnet log) + SignalAnchor interface stub
+test/               Foundry tests for SentinelLog and the deploy script
+script/             Deploy.s.sol (Monad Testnet) + Record.s.sol
+deployments/        monad-testnet.json: deployed address (written by Deploy.s.sol)
 docs/
+  index.html        GitHub Pages: read-only Monad Testnet view of recorded cards
   SUBMIT.md         Metropolis portal copy-paste + submission profile
   DEMO.md           Exact judge clicks (UI + CLI)
   SCREENSHOT_SCRIPT.md  GIF/video shot list for portal demo

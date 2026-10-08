@@ -202,7 +202,7 @@ def _integrity_from_text(text: str | None) -> tuple[bool, str]:
         prev_hash = raw["entry_hash"]
         expected_id += 1
 
-    return True, f"verified {expected_id - 1} entries"
+    return True, f"hashes match for {expected_id - 1} entries"
 
 
 def read_decisions(limit: int = 100, log_path: Path | None = None) -> list[LogEntry]:

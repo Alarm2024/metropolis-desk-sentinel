@@ -1,0 +1,51 @@
+name: Pages (demo page)
+
+# Publishes the read-only Monad Testnet page in docs/ to GitHub Pages.
+# One-time setting: Settings -> Pages -> Source -> GitHub Actions.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check the page and its deployment file
+        run: |
+          test -f docs/index.html
+          python3 -c "import json; d = json.load(open('docs/deployments/monad-testnet.json')); assert d['chainId'] == 10143, d"
+          ! grep -RInE '(PRIVATE|SECRET)_KEY *=|0x[0-9a-fA-F]{64}' docs/
+      - uses: actions/upload-pages-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          path: docs
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
