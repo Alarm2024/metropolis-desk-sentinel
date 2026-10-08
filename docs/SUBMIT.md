@@ -7,7 +7,7 @@
 **Track:** Trust / Identity & AI Infrastructure  
 **Hackathon:** [Metropolis Monad](https://metropolis.monad.xyz) · submit at [hackathon.monad.xyz](https://hackathon.monad.xyz)  
 **Builder:** Wyndham Heaven / elghaly (solo)  
-**Submit target:** October 13, 2026  
+**Deadline:** Wed 14 Oct 2026, 03:59 UTC  
 **Repo:** https://github.com/Alarm2024/metropolis-desk-sentinel
 
 ---
@@ -20,13 +20,14 @@ Use these values in the Metropolis project profile. Portal display name may show
 |--------------|------|
 | **Project name** | Morning Light Desk Sentinel |
 | **Track** | Trust / Identity & AI Infrastructure |
-| **One-liner** | Desk agents that refuse soft lies — SAFE HOLD with a provenance hash and a hash-chained decision log. |
-| **Description** | Trading desks need AI that refuses to fake conviction. Morning Light Desk Sentinel emits HOLD with explicit `refusal_code` when execution quality is thin or edge is weak, ships a SHA-256 provenance hash that reproduces exactly on replay, and appends every evaluation to a hash-chained decision log that flags edits to a logged entry (not a deleted tail or a full rewrite — see README). ERC-8004-inspired agent fields (`agent_version`, `schema_version`, `trust_posture`). Rule-based, deterministic, local mock — no wallet keys, no order execution. |
+| **One-liner** | Desk agents that refuse soft lies — SAFE HOLD with a provenance hash, a hash-chained decision log, and card hashes recorded on Monad Testnet. |
+| **Description** | Trading desks need AI that refuses to fake conviction. Morning Light Desk Sentinel emits HOLD with explicit `refusal_code` when execution quality is thin or edge is weak, ships a SHA-256 provenance hash that reproduces exactly on replay, and appends every evaluation to a hash-chained decision log that flags edits to a logged entry (not a deleted tail or a full rewrite — see README). ERC-8004-inspired agent fields (`agent_version`, `schema_version`, `trust_posture`). Rule-based, deterministic, local mock — no wallet keys in the agent, no order execution. A small `SentinelLog` contract on Monad Testnet (chainId 10143) records each card's `provenance_hash` with its SAFE HOLD verdict and reason, and a read-only page lists them. Contract address: **PENDING deploy**. |
 | **Problem** | AI desk assistants sound confident but emit directional calls on thin evidence with nothing to check afterward when wrong — a trust failure, not a model failure. |
 | **Solution** | SAFE HOLD honesty + provenance hash + hash-chained decision log + typed signal card schema with machine-readable refusal codes. |
-| **Demo link** | Run locally: `./run.sh` → http://127.0.0.1:8080 — see [DEMO.md](./DEMO.md). CLI: `./scripts/demo.sh` (15 s, deterministic). |
+| **Demo link** | Read-only page: https://alarm2024.github.io/metropolis-desk-sentinel/ (**PENDING**: after the deploy and Pages are on). Run locally: `./run.sh` → http://127.0.0.1:8080 — see [DEMO.md](./DEMO.md). CLI: `./scripts/demo.sh` (15 s, deterministic). |
 | **Code link** | https://github.com/Alarm2024/metropolis-desk-sentinel |
 | **Public health check** | `GET /api/health` — see [API.md](./API.md). Example: `curl -s http://127.0.0.1:8080/api/health` |
+| **On Monad** | `SentinelLog` on Monad Testnet (chainId 10143) at **PENDING** · explorer: `https://testnet.monadscan.com/address/<address>` · source: `contracts/SentinelLog.sol` · deploy steps: [MONAD_DEPLOY.md](./MONAD_DEPLOY.md) |
 | **Built during Metropolis** | Yes — Trust / Identity MVP (Sep 2026 build window) |
 
 **Demo video / GIF:** Follow [SCREENSHOT_SCRIPT.md](./SCREENSHOT_SCRIPT.md) (60–90 s shot list). Upload MP4 to portal or embed in project profile per Metropolis rules.
@@ -50,7 +51,7 @@ Trading desks and judges see AI assistants that *sound* confident. They emit dir
 | **Hash-chained decision log** | Append-only JSONL; each entry links to the prior `entry_hash`; `verify_log_integrity()` flags an edited entry (a deleted tail or a full rewrite with recomputed hashes is not detected) |
 | **Agent identity (local, ERC-8004-inspired)** | Every card carries `agent_version`, `schema_version`, and `trust_posture` — ready for future on-chain attestation |
 
-No live feeds. No wallet keys. No Jito. No mainnet claims in this MVP.
+No real-time market feeds. No wallet keys in the agent. No Jito. No mainnet. The only chain use is a testnet log of card hashes (below).
 
 ---
 
@@ -129,21 +130,23 @@ Key paths:
 | `docs/DEMO.md` | Exact judge clicks (UI + CLI) |
 | `docs/SCREENSHOT_SCRIPT.md` | GIF/video shot list for portal demo |
 | `docs/API.md` | `/api/health` and full HTTP reference |
-| `docs/MONAD_DEPLOY.md` | Future Monad hash-anchor checklist (stub) |
-| `contracts/` | `SignalAnchor` interface stub for future on-chain anchoring |
+| `docs/MONAD_DEPLOY.md` | Copy-paste runbook: throwaway key, faucet, deploy to Monad Testnet, record cards, Pages |
+| `contracts/SentinelLog.sol` | The Monad Testnet log of card hashes + SAFE HOLD verdicts (Foundry tests in `test/`) |
+| `contracts/ISignalAnchor.sol` | Interface only, for later anchoring work (not deployed) |
+| `docs/index.html` | Read-only page that lists recorded cards over the public RPC (no wallet) |
 
 ---
 
 ## What we claim vs. what we do not
 
-**Claim:** local agent with honest refusals, a reproducible provenance hash, an edit-evident decision log (confirms hashed fields weren't changed after the fact — it does not catch a deleted tail or a full rewrite, and doesn't prove who produced a card; see README), and public `/api/health` liveness.
+**Claim:** local agent with honest refusals, a reproducible provenance hash, an edit-evident decision log (confirms hashed fields weren't changed after the fact — it does not catch a deleted tail or a full rewrite, and doesn't prove who produced a card; see README), a public `/api/health` health check, and (once deployed) card hashes with SAFE HOLD verdicts recorded on Monad Testnet by one recorder address.
 
-**Do not claim:** order execution, mainnet/testnet deployment, LLM inference, or on-chain anchors in this repo (future work documented in `docs/MONAD_DEPLOY.md`).
+**Do not claim:** order execution, mainnet, LLM inference, that a recorded verdict was right, or the fuller `SignalAnchor` / ERC-8004 identity work (not built; see `docs/MONAD_DEPLOY.md`). Until `deployments/monad-testnet.json` has an address, do not claim the testnet deployment either.
 
 ---
 
 ## Submit
 
-**Target date:** October 13, 2026  
+**Deadline:** Wed 14 Oct 2026, 03:59 UTC  
 **Track:** Trust / Identity & AI Infrastructure — Metropolis Monad Hackathon  
 **Portal:** [hackathon.monad.xyz](https://hackathon.monad.xyz)

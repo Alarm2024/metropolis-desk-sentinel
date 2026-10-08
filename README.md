@@ -44,13 +44,15 @@ This release changes the provenance hash formula. The hash now covers the card's
 | Page | <https://alarm2024.github.io/metropolis-desk-sentinel/> (works after deploy: published by `.github/workflows/pages.yml` from `/docs` once this is on `main`; it shows recorded cards once the contract is deployed) |
 | Contract | `SentinelLog` at _pending deploy_ (recorded in [`deployments/monad-testnet.json`](./deployments/monad-testnet.json)) |
 | Network | Monad Testnet, chainId `10143`, RPC `https://testnet-rpc.monad.xyz` |
-| Explorer | `https://testnet.monadexplorer.com/address/<address>` |
+| Explorer | `https://testnet.monadscan.com/address/<address>` (Monadscan; MonadVision and Socialscan also index Monad Testnet) |
 
 [`contracts/SentinelLog.sol`](./contracts/SentinelLog.sol) records one card per call: `record(bytes32 cardHash, uint8 verdict, string reason)`. Here `cardHash` is the card's `provenance_hash`, `verdict` is `0` for SAFE_HOLD and `1` for OK, and `reason` is the refusal code plus its reason. Each call emits a `Recorded` event and keeps the last 50 entries readable on-chain. Only the deployer (the `recorder`) can record. The page lists the latest recorded cards (hash, verdict, reason, block time in UTC), read over the public RPC with viem; no wallet needed.
 
 **Honesty:** this is a demo, on testnet only, and testnet MON has no value. It places no trades and no orders, and the contract holds no funds: it has no payable functions and nothing to withdraw. An entry shows that the recorder address published this card hash at this block time. It does not show that the verdict was right, and it does not change what the hash itself proves (see [What the hash does and doesn't prove](#what-the-hash-does-and-doesnt-prove)).
 
 ### Deploy (maintainer only — judges don't need this)
+
+Step by step, with checks and fixes: [`docs/MONAD_DEPLOY.md`](./docs/MONAD_DEPLOY.md). In short:
 
 Testnet MON only. You need [Foundry](https://book.getfoundry.sh/getting-started/installation) and `git submodule update --init` (for `lib/forge-std`).
 
@@ -143,7 +145,7 @@ Interactive docs: **http://127.0.0.1:8080/docs** · Full reference: [docs/API.md
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/health` | Public liveness — `status`, `mode: local-mock`, agent + schema version (no secrets) |
+| `GET` | `/api/health` | Public health check — `status`, `mode: local-mock`, agent + schema version (no secrets) |
 | `GET` | `/api/schema` | JSON Schema + trust invariants for judges |
 | `POST` | `/api/evaluate` | Evaluate mock desk. Body: `{"seed":"..."}` |
 | `GET` | `/api/scenarios` | List named judge fixtures |
