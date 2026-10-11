@@ -33,7 +33,10 @@ Open **http://127.0.0.1:8080** in Chrome or Firefox.
 | 0:45 | Type `metropolis-judge-001` in Demo seed | |
 | 0:50 | Click **Evaluate mock desk** twice — hash unchanged | *Deterministic — same seed, same hash* |
 | 0:55 | (Optional) Second terminal: `curl -s localhost:8080/api/health \| jq` | *Public health — local-mock, no secrets* |
-| 1:00 | End card: repo URL on screen or pasted in editor | *github.com/Alarm2024/metropolis-desk-sentinel* |
+| 1:00 | Open the read-only page (https://alarm2024.github.io/metropolis-desk-sentinel/) — SentinelLog address, recorder, total recorded | *The same cards, recorded on Monad Testnet* |
+| 1:05 | Hold on the two SAFE HOLD cards: hashes start `0x2700ce83…` (hold thin liquidity) and `0xaf68ea24…` (hold neutral band), with reason and block time | *Same hash as the card in the app — anyone can check it* |
+| 1:10 | Click the address → Monadscan, contract page with the record transactions | *Public, no wallet needed to read* |
+| 1:15 | End card: repo URL on screen or pasted in editor | *github.com/Alarm2024/metropolis-desk-sentinel* |
 
 **Total:** ~60 s tight · ~90 s with CLI curl beat.
 

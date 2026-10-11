@@ -143,9 +143,9 @@ You should see the contract creation and two `record` transactions. Monad's docs
 2. Once PR #11 is merged to `main`, the **Pages (demo page)** workflow publishes `docs/` to https://alarm2024.github.io/metropolis-desk-sentinel/.
 3. Open it: it reads the address from `docs/deployments/monad-testnet.json` and lists the recorded cards (hash, verdict, reason, block time in UTC) over the public RPC. No wallet needed.
 
-## 12. Send the contract address to Claude
+## 12. After a redeploy
 
-Only the **contract address** (it is public). Claude then fills it into the README table and `docs/SUBMIT.md` and removes "PENDING".
+Put the new **contract address** (it is public) into the README table and `docs/SUBMIT.md`. The current deploy is already filled in: `0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d`.
 
 ---
 

@@ -66,7 +66,7 @@ git add deployments/monad-testnet.json docs/deployments/monad-testnet.json
 git commit -m "Record SentinelLog address on Monad Testnet" && git push
 ```
 
-The key is read from the environment variable `MONAD_TESTNET_KEY` only: it is never a command-line argument, never in a file, and never committed. The deploy script refuses any chain other than 10143 and writes the address only when it broadcasts. After deploying, replace _pending deploy_ above with the address. Pages: Settings → Pages → Source → GitHub Actions.
+The key is read from the environment variable `MONAD_TESTNET_KEY` only: it is never a command-line argument, never in a file, and never committed. The deploy script refuses any chain other than 10143 and writes the address only when it broadcasts. The address in the table above came from this script's broadcast; a redeploy writes the new one to `deployments/monad-testnet.json`. Pages: Settings → Pages → Source → GitHub Actions.
 
 ---
 
