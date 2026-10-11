@@ -37,14 +37,14 @@ This release changes the provenance hash formula. The hash now covers the card's
 
 ## On Monad Testnet
 
-> **Status: not deployed yet.** The contract, tests, deploy script and read-only page are in this repo. The address below gets filled in once the maintainer deploys with a throwaway testnet key. Until then the page says "Not deployed yet".
+> **Status: deployed on Monad Testnet** (block 70013514, deploy tx [`0x49183764…`](https://testnet.monadscan.com/tx/0x491837640917c383a6aa07d86c269b547f3a4795f89afef513e7d550e16bdf32)). Two SAFE HOLD cards are recorded: `hold_thin_liquidity` ([tx](https://testnet.monadscan.com/tx/0x0175d7e96ab0aacea14d48bef9e117fccfa25db1fc231c28b453eb227f55ffe7)) and `hold_neutral_band` ([tx](https://testnet.monadscan.com/tx/0xee888496bcae7b5cdd8398ae5d921859f9eca97925e9e943ec7992d2d5d0a623)). Source is verified on MonadVision (Sourcify exact match).
 
 | | |
 |---|---|
 | Page | <https://alarm2024.github.io/metropolis-desk-sentinel/> (works after deploy: published by `.github/workflows/pages.yml` from `/docs` once this is on `main`; it shows recorded cards once the contract is deployed) |
-| Contract | `SentinelLog` at _pending deploy_ (recorded in [`deployments/monad-testnet.json`](./deployments/monad-testnet.json)) |
+| Contract | `SentinelLog` at [`0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d`](https://testnet.monadscan.com/address/0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d) (recorded in [`deployments/monad-testnet.json`](./deployments/monad-testnet.json)) |
 | Network | Monad Testnet, chainId `10143`, RPC `https://testnet-rpc.monad.xyz` |
-| Explorer | `https://testnet.monadscan.com/address/<address>` (Monadscan; MonadVision and Socialscan also index Monad Testnet) |
+| Explorer | [Monadscan](https://testnet.monadscan.com/address/0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d) · [MonadVision, source verified](https://testnet.monadvision.com/address/0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d) |
 
 [`contracts/SentinelLog.sol`](./contracts/SentinelLog.sol) records one card per call: `record(bytes32 cardHash, uint8 verdict, string reason)`. Here `cardHash` is the card's `provenance_hash`, `verdict` is `0` for SAFE_HOLD and `1` for OK, and `reason` is the refusal code plus its reason. Each call emits a `Recorded` event and keeps the last 50 entries readable on-chain. Only the deployer (the `recorder`) can record. The page lists the latest recorded cards (hash, verdict, reason, block time in UTC), read over the public RPC with viem; no wallet needed.
 

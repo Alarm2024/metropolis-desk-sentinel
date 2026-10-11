@@ -4,7 +4,7 @@
 
 3️⃣🧿5️⃣
 
-**Status:** not deployed yet. The address is PENDING until `deployments/monad-testnet.json` has one.
+**Status:** deployed. `SentinelLog` is at `0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d` on Monad Testnet (https://testnet.monadscan.com/address/0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d); see `deployments/monad-testnet.json`. The steps below are kept for a redeploy.
 **Who runs this:** the maintainer, once, on a computer with a terminal. Judges don't need it.
 **Time:** about 15 minutes. **Cost:** nothing; testnet MON is free and has no value.
 
