@@ -7,8 +7,9 @@
 **Track:** Trust / Identity & AI Infrastructure  
 **Hackathon:** [Metropolis Monad](https://metropolis.monad.xyz) · submit at [hackathon.monad.xyz](https://hackathon.monad.xyz)  
 **Builder:** Wyndham Heaven / elghaly (solo)  
-**Deadline:** Wed 14 Oct 2026, 03:59 UTC  
-**Repo:** https://github.com/Alarm2024/metropolis-desk-sentinel
+**Deadline:** Wed 14 Oct 2026, **03:59 UTC** (**06:59 Africa/Cairo**; portal lists **13 Oct 11:59 PM ET**)  
+**Repo:** https://github.com/Alarm2024/metropolis-desk-sentinel  
+**Verdict doc:** [HACKATHON_VERDICT.md](./HACKATHON_VERDICT.md) (**GO**)
 
 ---
 
@@ -24,13 +25,26 @@ Use these values in the Metropolis project profile. Portal display name may show
 | **Description** | Trading desks need AI that refuses to fake conviction. Morning Light Desk Sentinel emits HOLD with explicit `refusal_code` when execution quality is thin or edge is weak, ships a SHA-256 provenance hash that reproduces exactly on replay, and appends every evaluation to a hash-chained decision log that flags edits to a logged entry (not a deleted tail or a full rewrite — see README). ERC-8004-inspired agent fields (`agent_version`, `schema_version`, `trust_posture`). Rule-based, deterministic, local mock — no wallet keys in the agent, no order execution. A small `SentinelLog` contract on Monad Testnet (chainId 10143) records each card's `provenance_hash` with its SAFE HOLD verdict and reason, and a read-only page lists them. Contract address: `0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d`. |
 | **Problem** | AI desk assistants sound confident but emit directional calls on thin evidence with nothing to check afterward when wrong — a trust failure, not a model failure. |
 | **Solution** | SAFE HOLD honesty + provenance hash + hash-chained decision log + typed signal card schema with machine-readable refusal codes. |
-| **Demo link** | Read-only page: https://alarm2024.github.io/metropolis-desk-sentinel/ (served once PR #11 is merged to `main` and Pages is turned on). Run locally: `./run.sh` → http://127.0.0.1:8080 — see [DEMO.md](./DEMO.md). CLI: `./scripts/demo.sh` (15 s, deterministic). |
+| **Demo link** | Read-only page: https://alarm2024.github.io/metropolis-desk-sentinel/ (GitHub Pages from `docs/`). Run locally: `./run.sh` → http://127.0.0.1:8080 — see [DEMO.md](./DEMO.md). CLI: `./scripts/demo.sh` (15 s, deterministic). |
 | **Code link** | https://github.com/Alarm2024/metropolis-desk-sentinel |
 | **Public health check** | `GET /api/health` — see [API.md](./API.md). Example: `curl -s http://127.0.0.1:8080/api/health` |
 | **On Monad** | `SentinelLog` on Monad Testnet (chainId 10143) at `0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d` · explorer: https://testnet.monadscan.com/address/0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d (source verified on MonadVision: https://testnet.monadvision.com/address/0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d) · 2 SAFE HOLD cards recorded (tx links in the README) · source: `contracts/SentinelLog.sol` · deploy steps: [MONAD_DEPLOY.md](./MONAD_DEPLOY.md) |
 | **Built during Metropolis** | Yes — Trust / Identity MVP (Sep 2026 build window) |
 
 **Demo video / GIF:** Follow [SCREENSHOT_SCRIPT.md](./SCREENSHOT_SCRIPT.md) (60–90 s shot list). Upload MP4 to portal or embed in project profile per Metropolis rules.
+
+### Video checklist (owner — complete ≥2 h before cutoff)
+
+- [ ] Record 1280×720 or 1920×1080, 60–90 s per [SCREENSHOT_SCRIPT.md](./SCREENSHOT_SCRIPT.md)
+- [ ] Include: SAFE HOLD (`hold thin liquidity`), CLEAR (`clear bullish`), deterministic seed, decision log **chain ok**
+- [ ] Include: https://alarm2024.github.io/metropolis-desk-sentinel/ with **2** recorded cards visible
+- [ ] Include: Monadscan contract page (record txs) — no private keys or wallet import on screen
+- [ ] Export MP4 ≤ **2 min** for portal upload
+- [ ] Paste portal table below into [hackathon.monad.xyz](https://hackathon.monad.xyz) and attach video
+
+### Paste-ready submission blurb (short description field)
+
+Morning Light Desk Sentinel is Trust / Identity infrastructure for desk agents: rule-based SAFE HOLD refusals with explicit `refusal_code`, SHA-256 provenance hashes, and a hash-chained decision log. On Monad Testnet, `SentinelLog` records card hashes with verdicts; the read-only Pages demo lists them over public RPC. Repo: https://github.com/Alarm2024/metropolis-desk-sentinel · Demo: https://alarm2024.github.io/metropolis-desk-sentinel/ · Contract: `0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d` (chainId 10143).
 
 ---
 
@@ -147,6 +161,7 @@ Key paths:
 
 ## Submit
 
-**Deadline:** Wed 14 Oct 2026, 03:59 UTC  
+**Deadline:** Wed 14 Oct 2026, 03:59 UTC (06:59 Cairo)  
 **Track:** Trust / Identity & AI Infrastructure — Metropolis Monad Hackathon  
-**Portal:** [hackathon.monad.xyz](https://hackathon.monad.xyz)
+**Portal:** [hackathon.monad.xyz](https://hackathon.monad.xyz)  
+**Schedule reference:** [monad.xyz/metropolis](https://www.monad.xyz/metropolis) (submission **13 Oct** on marketing site; portal cutoff **13 Oct 11:59 PM ET**)
