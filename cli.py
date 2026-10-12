@@ -22,7 +22,7 @@ def main() -> int:
     parser.add_argument("--symbol", default="MLDS-MOCK", help="Mock symbol label")
     parser.add_argument("--scenario", choices=list_scenarios(), help="Run named golden scenario")
     parser.add_argument("--no-log", action="store_true", help="Skip appending to decision log")
-    parser.add_argument("--verify", action="store_true", help="Print provenance verification result")
+    parser.add_argument("--verify", action="store_true", help="Print whether the provenance hash matches")
     args = parser.parse_args()
 
     if args.scenario:

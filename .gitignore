@@ -8,3 +8,7 @@ venv/
 .DS_Store
 data/
 tests/_api_test_log.jsonl
+# Foundry
+out/
+cache/
+broadcast/

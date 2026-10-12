@@ -40,7 +40,7 @@ interface ISignalAnchor {
     ) external;
 
     /**
-     * @notice Lookup anchor metadata for third-party verification.
+     * @notice Lookup anchor metadata for third-party hash checks.
      * @param hash provenance digest
      * @return record full anchor record; timestampMs 0 if never anchored
      */

@@ -31,7 +31,7 @@ provenance_valid=True
 === demo OK (exit 0) ===
 ```
 
-Exit code **0** = provenance verified. Same seed → same hash.
+Exit code **0** = the provenance hash matches. Same seed → same hash.
 
 ---
 
@@ -65,7 +65,7 @@ Expect `"status": "ok"`, `"mode": "local-mock"`, `"schema_version": "2.0"`.
 | 1 | Under **Judge scenarios**, click **`hold thin liquidity`** | Status pill shows `hold_thin_liquidity` |
 | 2 | Look at the signal card | Badge **HOLD**, posture **REFUSAL**, ⛔ **SAFE HOLD** |
 | 3 | Read **Why we refused** | `EXEC_QUALITY` + human reason about execution quality |
-| 4 | Check **Verified** in metadata | `valid ✓` (live provenance check) |
+| 4 | Check **Hash matches** in metadata | `yes ✓` (hash recomputed and compared) |
 | 5 | Scroll to **Decision log** | New entry `#N` · HOLD · EXEC_QUALITY · hash prefix |
 
 **Judge takeaway:** Thin liquidity alone triggers the refusal — order flow is neutral and volume is flat, and the agent still will not fake CLEAR on a thin book.
@@ -76,7 +76,7 @@ Expect `"status": "ok"`, `"mode": "local-mock"`, `"schema_version": "2.0"`.
 |------|--------|-------------------|
 | 1 | Click **`clear bullish`** | Badge **CLEAR**, posture **DIRECTIONAL** |
 | 2 | Confirm refusal panel is hidden | No `refusal_code` — honest conviction only when bounds pass |
-| 3 | Note **Provenance hash** changed | New hash; **Verified** still `valid ✓` |
+| 3 | Note **Provenance hash** changed | New hash; **Hash matches** still `yes ✓` |
 
 ### 5. Click — seed replay (20 s)
 
@@ -129,6 +129,6 @@ Add `--verify` to any command to assert provenance on stdout.
 | Port 8080 in use | `PORT=8081 ./run.sh` then open `http://127.0.0.1:8081` |
 | Missing deps | `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt` (`./run.sh` does this for you) |
 | Empty scenario buttons | Refresh page; server must be running |
-| `integrity_ok: false` / 409 "decision log is malformed; append refused" after upgrading | This release changes the provenance hash formula (it now covers the card's agent_version, schema_version, top-level timestamp_ms, summary, reasons, confidence, and refusal_reason), so a `decision_log.jsonl` written by an older version fails verification. Move or rotate the old log (e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl`) before starting the new version. |
+| `integrity_ok: false` / 409 "decision log is malformed; append refused" after upgrading | This release changes the provenance hash formula (it now covers the card's agent_version, schema_version, top-level timestamp_ms, summary, reasons, confidence, and refusal_reason), so a `decision_log.jsonl` written by an older version fails the hash check. Move or rotate the old log (e.g. `mv data/decision_log.jsonl data/decision_log.pre-upgrade.jsonl`) before starting the new version. |
 
 See [SCREENSHOT_SCRIPT.md](./SCREENSHOT_SCRIPT.md) for a 60–90 s screen-recording shot list.

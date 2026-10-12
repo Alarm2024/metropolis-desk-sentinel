@@ -1,0 +1,8 @@
+{
+  "address": "0xc8f9Fd87AAd99FCd19d223fA08B0959bD031Ca3d",
+  "chainId": 10143,
+  "contract": "SentinelLog",
+  "network": "monad-testnet",
+  "recorder": "0xFe4D4De2f9C246841FccD05A03Cf5100197DBbbe",
+  "rpc": "https://testnet-rpc.monad.xyz"
+}

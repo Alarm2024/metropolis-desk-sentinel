@@ -45,7 +45,7 @@ app = FastAPI(
     openapi_tags=[
         {"name": "health", "description": "Liveness and mode flags"},
         {"name": "evaluate", "description": "Run desk agent on mock or fixture metrics"},
-        {"name": "decisions", "description": "Decision log and provenance verification"},
+        {"name": "decisions", "description": "Decision log and provenance hash checks"},
         {"name": "schema", "description": "Typed card schema for judges"},
         {"name": "public", "description": "Optional keyless read-only aggregates"},
     ],
@@ -143,7 +143,7 @@ def card_schema() -> dict[str, Any]:
         "trust_invariants": [
             "HOLD => safe_hold=true, trust_posture=REFUSAL, refusal_code required",
             "CLEAR/SHORT => safe_hold=false, trust_posture=DIRECTIONAL, no refusal fields",
-            "provenance_hash must verify against the card's agent_version, schema_version, timestamp_ms, metrics, signal, safe_hold, trust_posture, refusal fields, reason_codes, summary, reasons, confidence; unknown keys fail verification (shows fields unchanged since hashing; does not prove origin)",
+            "provenance_hash must match a hash of the card's agent_version, schema_version, timestamp_ms, metrics, signal, safe_hold, trust_posture, refusal fields, reason_codes, summary, reasons, confidence; unknown keys make the hash check fail (a match shows fields unchanged since hashing; it does not prove origin)",
             "decision log entries are hash-chained and provenance-checked on append",
         ],
     }
@@ -217,7 +217,7 @@ def decisions(limit: int = Query(default=20, ge=1, le=200)) -> DecisionsResponse
 
 @app.post("/api/verify", tags=["decisions"])
 def verify_card(card: dict[str, Any]) -> dict[str, Any]:
-    """Verify provenance_hash for a submitted card JSON."""
+    """Check whether provenance_hash matches a submitted card JSON."""
     required = (
         "provenance_hash",
         "metrics",

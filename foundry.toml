@@ -1,0 +1,20 @@
+# Foundry config for the SentinelLog demo contract (Monad Testnet only).
+# Python tests live in tests/ and are unaffected; Solidity tests live in test/.
+[profile.default]
+src = "contracts"
+test = "test"
+script = "script"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.28"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+# The deploy script writes the deployed address here (and nowhere else).
+fs_permissions = [
+  { access = "write", path = "./deployments" },
+  { access = "write", path = "./docs/deployments" },
+]
+
+[rpc_endpoints]
+monad_testnet = "https://testnet-rpc.monad.xyz"
