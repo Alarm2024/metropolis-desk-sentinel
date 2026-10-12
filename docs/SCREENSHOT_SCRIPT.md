@@ -103,8 +103,11 @@ Export GIF ≤ **5 MB** for GitHub README; MP4 ≤ **2 min** for Metropolis port
 
 ## Do not show in demo
 
-- Wallet connect, private keys, or mainnet/testnet claims
-- Fake transaction hashes or explorer links
+- Private keys, seed phrases, or wallet import / connect flows
+- Mainnet balances or real-fund wallets
+- Fake transaction hashes (use the real Monadscan links from README / Pages)
 - Real-time market feeds or order execution
+
+**OK to show:** public Monad Testnet contract address, explorer links, and the read-only Pages demo (no wallet required).
 
 See [SUBMIT.md](./SUBMIT.md) for portal copy and [DEMO.md](./DEMO.md) for step-by-step judge clicks.
